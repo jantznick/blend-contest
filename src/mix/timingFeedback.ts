@@ -528,29 +528,56 @@ export function judgeTempoMatch(
   );
 }
 
+/** Channel fader “both decks in the room” threshold (0–127). */
+const CHANNEL_AUDIBLE_MIN = 48;
+
+function sampleAt(
+  points: MotionPoint[],
+  index: number,
+  fallback: number,
+): number {
+  if (points.length === 0) return fallback;
+  return points[Math.min(index, points.length - 1)]!.value;
+}
+
 function judgeBassMud(
   d1Low: MotionPoint[],
   d2Low: MotionPoint[],
   xf: MotionPoint[],
+  vol1: MotionPoint[] = [],
+  vol2: MotionPoint[] = [],
 ): TransitionDimension {
   const { center, centerTol, killMax, xfLeftMax, xfRightMin } = MIX_ZONES;
-  if (d1Low.length < 2 || d2Low.length < 2 || xf.length < 2) {
+  const hasXf = xf.length >= 2;
+  const hasVol = vol1.length >= 2 && vol2.length >= 2;
+  if (d1Low.length < 2 || d2Low.length < 2 || (!hasXf && !hasVol)) {
     return dim(
       "bass",
       "Bass hygiene",
       40,
-      "Need more LOW + crossfader motion to judge bass overlap.",
+      "Need more LOW plus crossfader or channel-fader motion to judge bass overlap.",
       "incomplete",
     );
   }
 
   let muddy = 0;
   let overlap = 0;
-  const n = Math.min(d1Low.length, d2Low.length, xf.length);
+  const n = Math.max(
+    Math.min(d1Low.length, d2Low.length),
+    hasXf ? xf.length : 0,
+    hasVol ? Math.min(vol1.length, vol2.length) : 0,
+  );
   for (let i = 0; i < n; i++) {
-    const xfV = xf[Math.min(i, xf.length - 1)]!.value;
-    const inOverlap = xfV > xfLeftMax && xfV < xfRightMin;
-    if (!inOverlap) continue;
+    const xfV = sampleAt(xf, i, MIX_ZONES.center);
+    const v1 = sampleAt(vol1, i, 127);
+    const v2 = sampleAt(vol2, i, 127);
+    // Both decks in the room: XF not hard-parked on one side (or XF missing),
+    // and — when channel faders were recorded — both audible. Covers XF blends
+    // and line-fader mixes with XF centered.
+    const xfAllowsBoth = !hasXf || (xfV > xfLeftMax && xfV < xfRightMin);
+    const channelsAllowBoth =
+      !hasVol || (v1 >= CHANNEL_AUDIBLE_MIN && v2 >= CHANNEL_AUDIBLE_MIN);
+    if (!(hasXf || hasVol) || !xfAllowsBoth || !channelsAllowBoth) continue;
     overlap++;
     const l1 = d1Low[Math.min(i, d1Low.length - 1)]!.value;
     const l2 = d2Low[Math.min(i, d2Low.length - 1)]!.value;
@@ -564,7 +591,7 @@ function judgeBassMud(
       "bass",
       "Bass hygiene",
       55,
-      "Little mid-crossfader overlap sampled — park XF in the middle longer next time if you want a bass tip.",
+      "Little dual-deck overlap sampled — leave both in the room longer (XF mid or both channel faders up) if you want a bass tip.",
       "incomplete",
     );
   }
@@ -740,7 +767,10 @@ function buildHandoffDim(
   const volHandoff = judgeVolumeHandoff(samples.deck1Volume, samples.deck2Volume, phraseBpm);
   const handoffFromXf = rampScore(xfRamp);
   const handoffFromVol = rampScore(volHandoff);
-  const useVol = recipe === "long-blend" && handoffFromVol > handoffFromXf;
+  // Crossfader cut must use XF. Every other recipe accepts channel-fader handoffs
+  // (XF parked center, Deck 2 up / Deck 1 down) when that scores better.
+  const allowVol = recipe !== "xfader-cut";
+  const useVol = allowVol && handoffFromVol > handoffFromXf;
   const handoffJudgment = useVol ? volHandoff : xfRamp;
   return dim(
     "handoff",
@@ -795,7 +825,13 @@ export function judgeBasicTransition(
     phraseBars: windows.bassSwap.phraseBars,
     label: "Deck 1 bass kill (handoff)",
   });
-  const bassMud = judgeBassMud(samples.deck1Low, samples.deck2Low, samples.crossfader);
+  const bassMud = judgeBassMud(
+    samples.deck1Low,
+    samples.deck2Low,
+    samples.crossfader,
+    samples.deck1Volume,
+    samples.deck2Volume,
+  );
 
   const filterOpen = judgeCcRamp(samples.deck2Filter, {
     startZone: (v) => v >= 88,
@@ -947,22 +983,35 @@ function incompleteTransitionJudgment(
 /**
  * Free mode: holistic blend quality + which named move the motion closest matches.
  */
+function sessionMotionSeries(samples: TransitionSessionSamples): MotionPoint[] {
+  const series = [
+    samples.crossfader,
+    samples.deck1Volume,
+    samples.deck2Volume,
+    samples.deck1Low,
+    samples.deck2Low,
+  ];
+  let best = samples.crossfader;
+  for (const s of series) {
+    if (s.length > best.length) best = s;
+  }
+  return best;
+}
+
 export function judgeFreeTransition(
   samples: TransitionSessionSamples,
   opts?: { bpm1?: number; bpm2?: number },
 ): TransitionJudgment {
   const recipe = "free" as const;
-  if (samples.crossfader.length < MIN_TRANSITION_SAMPLES) {
+  const motion = sessionMotionSeries(samples);
+  if (motion.length < MIN_TRANSITION_SAMPLES) {
     return incompleteTransitionJudgment(
       recipe,
-      "Need more motion — hit Start, blend, then End (at least a few seconds).",
+      "Need more motion — hit Start, blend with XF or channel faders, then End (at least a few seconds).",
     );
   }
-  const firstT = samples.crossfader[0]?.t ?? samples.deck1Low[0]?.t ?? 0;
-  const lastT =
-    samples.crossfader[samples.crossfader.length - 1]?.t ??
-    samples.deck1Low[samples.deck1Low.length - 1]?.t ??
-    firstT;
+  const firstT = motion[0]?.t ?? 0;
+  const lastT = motion[motion.length - 1]?.t ?? firstT;
   if (lastT - firstT < MIN_TRANSITION_WINDOW_MS) {
     return incompleteTransitionJudgment(
       recipe,
@@ -981,7 +1030,13 @@ export function judgeFreeTransition(
 
   const tempo = judgeTempoMatch(bpm1, bpm2, samples.deck1Pitch, samples.deck2Pitch);
   const kick = kickDim(samples.playheads);
-  const bassMud = judgeBassMud(samples.deck1Low, samples.deck2Low, samples.crossfader);
+  const bassMud = judgeBassMud(
+    samples.deck1Low,
+    samples.deck2Low,
+    samples.crossfader,
+    samples.deck1Volume,
+    samples.deck2Volume,
+  );
   const eqFlat = judgeEqFlatness(
     [...samples.deck1Mid, ...samples.deck2Mid],
     [...samples.deck1High, ...samples.deck2High],
