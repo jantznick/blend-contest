@@ -10,6 +10,28 @@ import type { LiveDeckValues, LivePressed } from "../midi/useLiveController";
 
 const PAD_MODES = ["HOT CUE", "LOOP", "FX", "NEURAL"] as const;
 
+const PAD_LABELS: Record<(typeof PAD_MODES)[number], string[]> = {
+  "HOT CUE": ["1", "2", "3", "4", "5", "6", "7", "8"],
+  LOOP: ["1/4", "1/2", "1", "2", "4", "8", "16", "32"],
+  FX: ["LPF", "HPF", "-LO", "-MID", "-HI", "1/2", "GATE", "BRK"],
+  NEURAL: ["KICK", "BASS", "MID", "HAT", "VOC", "INS", "MUTE", "RST"],
+};
+
+function pitchCcToRate(cc: number) {
+  return 1 + ((cc - 64) / 64) * 0.08;
+}
+
+function formatEffectiveBpm(catalogBpm: number, pitchCc?: number | null) {
+  const eff = catalogBpm * pitchCcToRate(pitchCc ?? 64);
+  return Math.abs(eff - Math.round(eff)) < 0.05 ? String(Math.round(eff)) : eff.toFixed(1);
+}
+
+function formatPitchPct(pitchCc?: number | null) {
+  const pct = (pitchCcToRate(pitchCc ?? 64) - 1) * 100;
+  if (Math.abs(pct) < 0.05) return "0.0%";
+  return `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+}
+
 function clamp127(n: number) {
   return Math.max(0, Math.min(127, Math.round(n)));
 }
@@ -134,6 +156,8 @@ function Deck({
   pitch,
   pads = [],
   cues = [],
+  loopPad = null,
+  neural = [],
   trackSelect,
 }: {
   deck: 1 | 2;
@@ -145,6 +169,8 @@ function Deck({
   pitch?: number | null;
   pads?: boolean[];
   cues?: (number | null)[];
+  loopPad?: number | null;
+  neural?: boolean[];
   trackSelect: ReactNode;
 }) {
   const playId = `deck${deck}.play` as MixUltraControl;
@@ -193,7 +219,7 @@ function Deck({
 
   const pitchEl = (
     <div className="hw-pitch">
-      <span>TEMPO</span>
+      <span>TEMPO {formatPitchPct(pitch)}</span>
       <Fader id={pitchId} value={pitch} label={`Deck ${deck} tempo`} />
     </div>
   );
@@ -230,7 +256,7 @@ function Deck({
         <div className="hw-deck-badge">DECK {deck}</div>
         <div className="hw-deck-track">
           <strong title={title}>{title}</strong>
-          <span>{bpm} BPM</span>
+          <span title={`Catalog ${bpm} · pitch ${formatPitchPct(pitch)}`}>{formatEffectiveBpm(bpm, pitch)} BPM</span>
         </div>
         {trackSelect}
       </header>
@@ -286,7 +312,7 @@ function Deck({
           type="button"
           className={`hw-pad-mode hw-shift${shift ? " on" : ""}`}
           aria-pressed={shift}
-          title="Hold SHIFT to clear hot cues"
+          title="Latch SHIFT, then tap a HOT CUE pad to clear it"
           onClick={() => setShift((s) => !s)}
         >
           SHIFT
@@ -294,21 +320,37 @@ function Deck({
       </div>
 
       <div className="hw-pads" role="group" aria-label={`Deck ${deck} pads`}>
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <button
-            key={i}
-            type="button"
-            className={`hw-pad${pads[i] ? " hit" : ""}${cues[i] != null ? " set" : ""}`}
-            aria-label={`Pad ${i + 1}`}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-              padPointer(i, true, e.shiftKey);
-            }}
-            onPointerUp={(e) => padPointer(i, false, e.shiftKey)}
-            onPointerCancel={(e) => padPointer(i, false, e.shiftKey)}
-          />
-        ))}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const labels =
+            shift && padMode === "HOT CUE"
+              ? Array(8).fill("CLR")
+              : PAD_LABELS[padMode];
+          const armed =
+            padMode === "HOT CUE"
+              ? cues[i] != null
+              : padMode === "LOOP"
+                ? loopPad === i
+                : padMode === "NEURAL"
+                  ? !!neural[i]
+                  : false;
+          return (
+            <button
+              key={i}
+              type="button"
+              className={`hw-pad${pads[i] ? " hit" : ""}${armed ? " set" : ""}`}
+              aria-label={`${padMode} pad ${labels[i]}`}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                padPointer(i, true, e.shiftKey);
+              }}
+              onPointerUp={(e) => padPointer(i, false, e.shiftKey)}
+              onPointerCancel={(e) => padPointer(i, false, e.shiftKey)}
+            >
+              <span className="hw-pad-label">{labels[i]}</span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
@@ -329,6 +371,10 @@ type Props = {
   pads2?: boolean[];
   cues1?: (number | null)[];
   cues2?: (number | null)[];
+  loopPad1?: number | null;
+  loopPad2?: number | null;
+  neural1?: boolean[];
+  neural2?: boolean[];
   select1: ReactNode;
   select2: ReactNode;
 };
@@ -348,6 +394,10 @@ export function DjBooth({
   pads2,
   cues1,
   cues2,
+  loopPad1 = null,
+  loopPad2 = null,
+  neural1,
+  neural2,
   select1,
   select2,
 }: Props) {
@@ -363,6 +413,8 @@ export function DjBooth({
         pitch={values["deck1.pitch"]}
         pads={pads1}
         cues={cues1}
+        loopPad={loopPad1}
+        neural={neural1}
         trackSelect={select1}
       />
 
@@ -413,6 +465,8 @@ export function DjBooth({
         pitch={values["deck2.pitch"]}
         pads={pads2}
         cues={cues2}
+        loopPad={loopPad2}
+        neural={neural2}
         trackSelect={select2}
       />
     </div>

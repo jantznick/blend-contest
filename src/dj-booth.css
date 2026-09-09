@@ -20,10 +20,10 @@ body,
   height: 100vh;
   height: 100dvh;
   max-height: 100dvh;
-  padding: 0.35rem 0.45rem 0.4rem;
+  padding: 0.2rem 0.3rem 0.25rem;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  gap: 0.3rem;
+  gap: 0.18rem;
   overflow: hidden;
   color: #e8edf4;
   background:
@@ -50,16 +50,14 @@ body,
 .dj-brand {
   margin: 0;
   font-family: var(--display);
-  font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
   letter-spacing: 0.05em;
   line-height: 0.9;
   color: #f4f7fb;
 }
 
 .dj-tag {
-  margin: 0.08rem 0 0;
-  font-size: 0.68rem;
-  color: var(--ink-soft);
+  display: none;
 }
 
 .dj-actions {
@@ -190,24 +188,18 @@ body,
     0 18px 40px #00000088;
 }
 
-/* —— Chassis: one continuous controller surface —— */
+/* —— Chassis: dense Mix Ultra / DDJ proportions —— */
 .hw-chassis {
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(9.5rem, 0.62fr) minmax(0, 1.2fr);
+  /* Wider decks, tighter mixer — jogs dominate */
+  grid-template-columns: minmax(0, 1.35fr) minmax(7.5rem, 0.48fr) minmax(0, 1.35fr);
   gap: 0;
-  padding: 0.55rem;
+  padding: 0.3rem;
   align-items: stretch;
   background:
     radial-gradient(ellipse 50% 40% at 50% 0%, #2a303855 0%, transparent 60%),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0,
-      transparent 2px,
-      #ffffff02 2px,
-      #ffffff02 3px
-    ),
     linear-gradient(180deg, #1a1e24 0%, #12151a 100%);
 }
 
@@ -215,10 +207,11 @@ body,
   min-width: 0;
   min-height: 0;
   display: grid;
+  /* Jog area eats most of the height; pads sit tight underneath */
   grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-  gap: 0.35rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 10px;
+  gap: 0.2rem;
+  padding: 0.25rem 0.3rem 0.3rem;
+  border-radius: 8px;
   background:
     linear-gradient(180deg, #22262e 0%, #161920 100%);
   border: 1px solid #30363f;
@@ -241,30 +234,30 @@ body,
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
-  gap: 0.25rem 0.45rem;
+  gap: 0.15rem 0.35rem;
   align-items: center;
 }
 
 .hw-deck-badge {
   grid-row: 1 / 3;
   font-family: var(--mono);
-  font-size: 0.62rem;
+  font-size: 0.55rem;
   letter-spacing: 0.1em;
   color: var(--accent);
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  padding: 0.2rem 0;
+  padding: 0.1rem 0;
 }
 
 .hw-deck-track {
   display: flex;
   align-items: baseline;
-  gap: 0.45rem;
+  gap: 0.35rem;
   min-width: 0;
 }
 
 .hw-deck-track strong {
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   font-weight: 650;
   white-space: nowrap;
   overflow: hidden;
@@ -273,7 +266,7 @@ body,
 
 .hw-deck-track span {
   font-family: var(--mono);
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: #7a8494;
   flex-shrink: 0;
 }
@@ -281,8 +274,8 @@ body,
 .dj-load {
   grid-column: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 3rem auto;
-  gap: 0.25rem;
+  grid-template-columns: minmax(0, 1fr) 2.6rem auto;
+  gap: 0.18rem;
 }
 
 .dj-load button {
@@ -290,8 +283,10 @@ body,
   border: 1px solid #3a404a;
   background: #1a1e24;
   color: #c8d0dc;
-  border-radius: 6px;
+  border-radius: 5px;
   font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.35rem;
 }
 
 .hw-deck-main {
@@ -299,37 +294,45 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.35rem;
+  /* Let the jog claim almost all remaining deck height */
+  flex: 1 1 auto;
 }
 
 .hw-pitch {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  height: min(72%, 14rem);
+  gap: 0.15rem;
+  height: min(85%, 100%);
+  align-self: stretch;
+  max-height: 100%;
 }
 
 .hw-pitch > span {
   font-family: var(--mono);
-  font-size: 0.5rem;
+  font-size: 0.45rem;
   letter-spacing: 0.1em;
   color: #6a7382;
 }
 
 .hw-pitch .hw-fader {
   height: 100%;
+  flex: 1;
 }
 
-/* —— CDJ-style jog —— */
+/* —— CDJ-style jog: fill the deck —— */
 .hw-jog {
-  width: min(100%, 100%);
-  max-width: min(36vmin, 14.5rem);
-  aspect-ratio: 1;
+  width: auto;
+  height: 100%;
   max-height: 100%;
+  /* Prefer filling available space; cap only so mixer still fits */
+  max-width: min(100%, 46vmin, 22rem);
+  aspect-ratio: 1;
   touch-action: none;
   cursor: grab;
   position: relative;
+  flex: 0 1 auto;
 }
 
 .hw-jog:active {
@@ -588,6 +591,9 @@ body,
 }
 
 .hw-pad {
+  position: relative;
+  display: grid;
+  place-items: center;
   appearance: none;
   aspect-ratio: 1.3;
   min-height: 1.7rem;
@@ -597,6 +603,19 @@ body,
   box-shadow: inset 0 1px 0 #ffffff14, 0 1px 2px #00000066;
   cursor: pointer;
   touch-action: none;
+}
+
+.hw-pad-label {
+  font-family: var(--mono);
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c8d0dc;
+  pointer-events: none;
+}
+
+.hw-pad.set .hw-pad-label {
+  color: #e8f4ff;
 }
 
 .hw-pad.set {

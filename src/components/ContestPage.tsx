@@ -383,6 +383,10 @@ export function ContestPage({
           pads2={live.pads2}
           cues1={tt.cues1}
           cues2={tt.cues2}
+          loopPad1={tt.loopPad1}
+          loopPad2={tt.loopPad2}
+          neural1={tt.neural1}
+          neural2={tt.neural2}
           select1={
             <DeckLoad
               deck={1}

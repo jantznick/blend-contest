@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { identifyMixUltra } from "../midi/mixUltraMap";
 import type { LiveDeckValues, PadCueEvent } from "../midi/useLiveController";
 import { useMidiMessages } from "../midi/useMidiBus";
-import { getTrackCatalog, subscribeCatalog, type TrackId } from "./tracks";
+import { getTrackCatalog, subscribeCatalog, trackById, type TrackId } from "./tracks";
 import {
   applyLiveMix,
   createTurntable,
@@ -13,8 +13,10 @@ import {
   getDeckPeaks,
   getDeckPlayhead,
   getHotCues,
+  getLoopPad,
+  getNeuralMutes,
   handleJog,
-  handlePad,
+  handlePerformancePad,
   loadTrack,
   setDeckPlaying,
   type TurntableEngine,
@@ -37,6 +39,10 @@ export function useTurntableSession(opts: {
   const [track2, setTrack2] = useState<TrackId>("deep");
   const [cues1, setCues1] = useState<(number | null)[]>(() => Array(8).fill(null));
   const [cues2, setCues2] = useState<(number | null)[]>(() => Array(8).fill(null));
+  const [loopPad1, setLoopPad1] = useState<number | null>(null);
+  const [loopPad2, setLoopPad2] = useState<number | null>(null);
+  const [neural1, setNeural1] = useState<boolean[]>(() => Array(8).fill(false));
+  const [neural2, setNeural2] = useState<boolean[]>(() => Array(8).fill(false));
   const [playhead1, setPlayhead1] = useState(0);
   const [playhead2, setPlayhead2] = useState(0);
   const [duration1, setDuration1] = useState(1);
@@ -128,9 +134,13 @@ export function useTurntableSession(opts: {
       if (deck === 1) {
         setTrack1(id);
         setCues1(getHotCues(eng, 1));
+        setLoopPad1(getLoopPad(eng, 1));
+        setNeural1(getNeuralMutes(eng, 1));
       } else {
         setTrack2(id);
         setCues2(getHotCues(eng, 2));
+        setLoopPad2(getLoopPad(eng, 2));
+        setNeural2(getNeuralMutes(eng, 2));
       }
     },
     [boot, refreshWave],
@@ -142,12 +152,27 @@ export function useTurntableSession(opts: {
       const eng = engineRef.current;
       if (!eng) return;
       await ensureAudio(eng);
-      const cues = handlePad(eng, ev.deck, ev.pad, ev.clear);
+      const trackId = ev.deck === 1 ? eng.deck1.trackId : eng.deck2.trackId;
+      const bpm = trackById(trackId).bpm;
+      const result = handlePerformancePad(eng, ev.deck, ev.pad, {
+        clear: ev.clear,
+        down: ev.down,
+        modeBase: ev.modeBase,
+        bpm,
+      });
+      // FX release: restore mixer EQ / gain from live CCs
+      if (ev.modeBase === 32 && !ev.down) {
+        applyLiveMix(eng, valuesRef.current);
+      }
       if (ev.deck === 1) {
-        setCues1(cues);
+        setCues1(result.cues);
+        setLoopPad1(result.loopPad);
+        setNeural1(result.neural);
         setPlaying1(eng.deck1.playing);
       } else {
-        setCues2(cues);
+        setCues2(result.cues);
+        setLoopPad2(result.loopPad);
+        setNeural2(result.neural);
         setPlaying2(eng.deck2.playing);
       }
     },
@@ -197,6 +222,10 @@ export function useTurntableSession(opts: {
     track2,
     cues1,
     cues2,
+    loopPad1,
+    loopPad2,
+    neural1,
+    neural2,
     playhead1,
     playhead2,
     duration1,
