@@ -30,7 +30,7 @@ function tipClass(verdict: string): string {
 
 /**
  * Contest round: two decks, Start → mix → End & grade (controller-motion score).
- * Ported from Hercules TransitionPracticeLab without tutorials / Tidal.
+ * Audio is hosted files from `public/tracks/` (or local upload).
  */
 export function ContestPage({
   initialTarget = "free",
@@ -49,8 +49,6 @@ export function ContestPage({
     values: live.values,
     midiEnabled: true,
     transportFromMidi: true,
-    muteBed1: false,
-    muteBed2: false,
   });
   padRef.current = tt.onPad;
   jogRef.current = tt.onJog;
@@ -293,7 +291,7 @@ export function ContestPage({
           hint={
             locked
               ? "Finish this attempt before changing tracks"
-              : "Bundled beds or local uploads — set upload BPM before choosing a file"
+              : "Pick hosted beds or upload a file — set upload BPM before choosing a file"
           }
         />
 
@@ -367,7 +365,7 @@ export function ContestPage({
             ))}
             <p className="footer-note">
               Score is MIDI / on-screen control motion + tempo scaffold — not spectral audio analysis
-              yet. Contest leaderboards and fixed song pairs come next.
+              yet. Fixed hosted song pairs and leaderboards come next.
             </p>
           </HardwareGrade>
         )}

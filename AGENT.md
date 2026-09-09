@@ -8,15 +8,15 @@ Contest product: grade a mix between **two songs**. Key Mixer stays harmonic pla
 
 - Dual-deck Web Audio + Mix Ultra MIDI + on-screen deck
 - Transition Start / End grading (`judgeBasicTransition`)
-- Local file upload with BPM field
-- No Tidal / tutorials / Prisma
+- Hosted tracks via `public/tracks/` + local file upload with BPM field
+- No streaming APIs, auth, or backend
 
 ## Suggested next tasks
 
-1. Follow [docs/plans/tidal-integration.md](docs/plans/tidal-integration.md) — Horizon A (search → load decks)
+1. Drop contest mp3/wav files into `public/tracks/` and list them in `src/audio/tracks.ts`
 2. `npm install && npm run build` — fix any TS strict issues
 3. Smoke-test in browser: Arm → Start → move XF/EQ → End & grade
-4. Horizon B: admin daily Tidal pair + score persistence
+4. Fixed contest rounds (admin-picked hosted pair) + score persistence
 5. Optional: MediaRecorder on master bus for audio review
 
 ## Source reference
