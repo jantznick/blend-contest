@@ -30,7 +30,10 @@ function tipClass(verdict: string): string {
 
 /**
  * Contest round: two decks, Start → mix → End & grade (controller-motion score).
+<<<<<<< HEAD
  * Audio is hosted files from `public/tracks/` (or local upload).
+=======
+>>>>>>> origin/main
  */
 export function ContestPage({
   initialTarget = "free",
