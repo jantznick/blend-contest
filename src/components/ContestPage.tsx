@@ -23,6 +23,7 @@ import { useHardwareArm } from "../context/HardwareArmContext";
 import { DjBooth } from "./DjBooth";
 import { HardwareGrade } from "./HardwareLabShell";
 import { HowToPlayModal } from "./HowToPlayModal";
+import { MobileBooth } from "./MobileBooth";
 import { WaveformStrip } from "./WaveformStrip";
 
 type SessionPhase = "idle" | "recording" | "graded";
@@ -379,54 +380,106 @@ export function ContestPage({
       {tt.error && <p className="dj-error">{tt.error}</p>}
 
       <div className="dj-stage">
-        <DjBooth
-          values={live.values}
-          pressed={live.pressed}
-          playing1={tt.playing1}
-          playing2={tt.playing2}
-          jogAngle1={live.jogAngle1}
-          jogAngle2={live.jogAngle2}
-          title1={bed1.title}
-          title2={bed2.title}
-          bpm1={bed1.bpm}
-          bpm2={bed2.bpm}
-          pads1={live.pads1}
-          pads2={live.pads2}
-          cues1={tt.cues1}
-          cues2={tt.cues2}
-          loopPad1={tt.loopPad1}
-          loopPad2={tt.loopPad2}
-          neural1={tt.neural1}
-          neural2={tt.neural2}
-          select1={
-            <DeckLoad
-              deck={1}
-              tracks={tt.tracks}
-              value={tt.track1}
-              locked={locked}
-              onSelect={(id) => {
-                if (!locked) void tt.setTrack(1, id);
-              }}
-              onUploaded={(id) => {
-                if (!locked) void tt.setTrack(1, id);
-              }}
-            />
-          }
-          select2={
-            <DeckLoad
-              deck={2}
-              tracks={tt.tracks}
-              value={tt.track2}
-              locked={locked}
-              onSelect={(id) => {
-                if (!locked) void tt.setTrack(2, id);
-              }}
-              onUploaded={(id) => {
-                if (!locked) void tt.setTrack(2, id);
-              }}
-            />
-          }
-        />
+        <div className="dj-stage-desktop">
+          <DjBooth
+            values={live.values}
+            pressed={live.pressed}
+            playing1={tt.playing1}
+            playing2={tt.playing2}
+            jogAngle1={live.jogAngle1}
+            jogAngle2={live.jogAngle2}
+            title1={bed1.title}
+            title2={bed2.title}
+            bpm1={bed1.bpm}
+            bpm2={bed2.bpm}
+            pads1={live.pads1}
+            pads2={live.pads2}
+            cues1={tt.cues1}
+            cues2={tt.cues2}
+            loopPad1={tt.loopPad1}
+            loopPad2={tt.loopPad2}
+            neural1={tt.neural1}
+            neural2={tt.neural2}
+            select1={
+              <DeckLoad
+                deck={1}
+                tracks={tt.tracks}
+                value={tt.track1}
+                locked={locked}
+                onSelect={(id) => {
+                  if (!locked) void tt.setTrack(1, id);
+                }}
+                onUploaded={(id) => {
+                  if (!locked) void tt.setTrack(1, id);
+                }}
+              />
+            }
+            select2={
+              <DeckLoad
+                deck={2}
+                tracks={tt.tracks}
+                value={tt.track2}
+                locked={locked}
+                onSelect={(id) => {
+                  if (!locked) void tt.setTrack(2, id);
+                }}
+                onUploaded={(id) => {
+                  if (!locked) void tt.setTrack(2, id);
+                }}
+              />
+            }
+          />
+        </div>
+        <div className="dj-stage-mobile">
+          <MobileBooth
+            values={live.values}
+            pressed={live.pressed}
+            playing1={tt.playing1}
+            playing2={tt.playing2}
+            jogAngle1={live.jogAngle1}
+            jogAngle2={live.jogAngle2}
+            title1={bed1.title}
+            title2={bed2.title}
+            bpm1={bed1.bpm}
+            bpm2={bed2.bpm}
+            pads1={live.pads1}
+            pads2={live.pads2}
+            cues1={tt.cues1}
+            cues2={tt.cues2}
+            loopPad1={tt.loopPad1}
+            loopPad2={tt.loopPad2}
+            neural1={tt.neural1}
+            neural2={tt.neural2}
+            select1={
+              <DeckLoad
+                deck={1}
+                tracks={tt.tracks}
+                value={tt.track1}
+                locked={locked}
+                onSelect={(id) => {
+                  if (!locked) void tt.setTrack(1, id);
+                }}
+                onUploaded={(id) => {
+                  if (!locked) void tt.setTrack(1, id);
+                }}
+              />
+            }
+            select2={
+              <DeckLoad
+                deck={2}
+                tracks={tt.tracks}
+                value={tt.track2}
+                locked={locked}
+                onSelect={(id) => {
+                  if (!locked) void tt.setTrack(2, id);
+                }}
+                onUploaded={(id) => {
+                  if (!locked) void tt.setTrack(2, id);
+                }}
+              />
+            }
+          />
+        </div>
       </div>
 
       {grade && (
