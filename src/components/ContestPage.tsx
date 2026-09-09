@@ -123,7 +123,7 @@ function DeckLoad({
   );
 }
 
-/** Single-viewport turntable contest — djay-style dual platters, no page scroll. */
+/** Single-viewport turntable contest — hosted tracks on dual platters, no page scroll. */
 export function ContestPage({
   initialTarget = "free",
 }: {
@@ -141,8 +141,6 @@ export function ContestPage({
     values: live.values,
     midiEnabled: true,
     transportFromMidi: true,
-    muteBed1: false,
-    muteBed2: false,
   });
   padRef.current = tt.onPad;
   jogRef.current = tt.onJog;
@@ -423,6 +421,10 @@ export function ContestPage({
                 {d.label} ({d.score}): {d.tip}
               </p>
             ))}
+            <p className="footer-note">
+              Score is MIDI / on-screen control motion + tempo scaffold — not spectral audio analysis
+              yet. Fixed hosted song pairs and leaderboards come next.
+            </p>
           </HardwareGrade>
         </div>
       )}

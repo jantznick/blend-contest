@@ -389,7 +389,6 @@ export function applyDeckPitch(engine: TurntableEngine, deck: 1 | 2, cc: number)
 export function applyLiveMix(
   engine: TurntableEngine,
   values: Partial<Record<string, number>>,
-  opts?: { muteBed1?: boolean; muteBed2?: boolean },
 ) {
   const v = (k: string, fallback: number) => values[k] ?? fallback;
   applyDeckFilter(engine, 1, v("deck1.filter", 64));
@@ -402,10 +401,7 @@ export function applyLiveMix(
   applyDeckMid(engine, 2, v("deck2.mid", 64));
   applyDeckHigh(engine, 2, v("deck2.high", 64));
   applyDeckPitch(engine, 2, v("deck2.pitch", 64));
-  // Free Play with a Tidal track: keep the practice bed silent so you hear the song.
-  const vol1 = opts?.muteBed1 ? 0 : v("deck1.volume", 100);
-  const vol2 = opts?.muteBed2 ? 0 : v("deck2.volume", 100);
-  applyCrossfader(engine, v("crossfader", 64), vol1, vol2);
+  applyCrossfader(engine, v("crossfader", 64), v("deck1.volume", 100), v("deck2.volume", 100));
   applyMaster(engine, v("master", 100));
 }
 

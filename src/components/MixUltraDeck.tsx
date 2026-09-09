@@ -267,7 +267,7 @@ type WingProps = {
   onPadModeChange?: (mode: string) => void;
   shiftLatched?: boolean;
   onShiftLatch?: (on: boolean) => void;
-  /** Optional loaded-track label (e.g. Free Play Tidal title). */
+  /** Optional loaded-track label shown on the deck. */
   trackLabel?: string | null;
 };
 
