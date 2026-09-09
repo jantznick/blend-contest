@@ -379,6 +379,10 @@ export function ContestPage({
           title2={bed2.title}
           bpm1={bed1.bpm}
           bpm2={bed2.bpm}
+          pads1={live.pads1}
+          pads2={live.pads2}
+          cues1={tt.cues1}
+          cues2={tt.cues2}
           select1={
             <DeckLoad
               deck={1}
