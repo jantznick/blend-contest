@@ -978,6 +978,10 @@ body,
     padding: 0.35rem 0.4rem;
   }
 
+  .hw-eq-grid {
+    flex: 1 1 auto;
+  }
+
   .hw-eq-col {
     flex-direction: row;
     flex-wrap: wrap;
