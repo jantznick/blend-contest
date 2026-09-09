@@ -22,6 +22,7 @@ import { useLiveController, type PadCueEvent } from "../midi/useLiveController";
 import { useHardwareArm } from "../context/HardwareArmContext";
 import { DjBooth } from "./DjBooth";
 import { HardwareGrade } from "./HardwareLabShell";
+import { HowToPlayModal } from "./HowToPlayModal";
 import { WaveformStrip } from "./WaveformStrip";
 
 type SessionPhase = "idle" | "recording" | "graded";
@@ -150,6 +151,7 @@ export function ContestPage({
   const [phase, setPhase] = useState<SessionPhase>("idle");
   const [grade, setGrade] = useState<TransitionJudgment | null>(null);
   const [alignSamples, setAlignSamples] = useState<PlayheadSample[]>([]);
+  const [howtoOpen, setHowtoOpen] = useState(false);
 
   const recording = phase === "recording";
   const locked = phase !== "idle";
@@ -293,6 +295,15 @@ export function ContestPage({
         </div>
 
         <div className="dj-actions">
+          <button
+            type="button"
+            className="dj-action dj-action-help"
+            aria-haspopup="dialog"
+            aria-expanded={howtoOpen}
+            onClick={() => setHowtoOpen(true)}
+          >
+            How to play
+          </button>
           {phase === "idle" && (
             <button type="button" className="dj-action primary" onClick={() => void go()}>
               Go
@@ -428,6 +439,8 @@ export function ContestPage({
           </HardwareGrade>
         </div>
       )}
+
+      <HowToPlayModal open={howtoOpen} onClose={() => setHowtoOpen(false)} />
     </div>
   );
 }
