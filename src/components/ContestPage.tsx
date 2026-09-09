@@ -450,6 +450,12 @@ export function ContestPage({
             loopPad2={tt.loopPad2}
             neural1={tt.neural1}
             neural2={tt.neural2}
+            peaks1={tt.peaks1}
+            peaks2={tt.peaks2}
+            playhead1={tt.playhead1}
+            playhead2={tt.playhead2}
+            duration1={tt.duration1}
+            duration2={tt.duration2}
             select1={
               <DeckLoad
                 deck={1}
