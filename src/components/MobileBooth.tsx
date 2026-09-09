@@ -14,6 +14,7 @@ import {
 import { injectControlCc, injectControlNote, injectJog, injectPad, PAD_MODE_BASE } from "../midi/inject";
 import type { MixUltraControl } from "../midi/mixUltraMap";
 import type { LiveDeckValues, LivePressed } from "../midi/useLiveController";
+import { WaveformStrip } from "./WaveformStrip";
 
 const PAD_MODES = ["HOT CUE", "LOOP", "FX", "NEURAL"] as const;
 const PAD_LABELS: Record<(typeof PAD_MODES)[number], string[]> = {
@@ -24,7 +25,7 @@ const PAD_LABELS: Record<(typeof PAD_MODES)[number], string[]> = {
 };
 
 type FocusPane = "1" | "mix" | "2";
-type Surface = "mixer" | "platters" | "pads";
+type Surface = "mixer" | "waves" | "pads";
 
 function clamp127(n: number) {
   return Math.max(0, Math.min(127, Math.round(n)));
@@ -337,27 +338,35 @@ function PadBank({
 function MixerPane({ values }: { values: LiveDeckValues }) {
   return (
     <div className="mb-mixer">
-      <div className="mb-mixer-filters">
-        <Knob id="deck1.filter" label="FILTER" value={values["deck1.filter"]} size="lg" />
-        <Knob id="deck2.filter" label="FILTER" value={values["deck2.filter"]} size="lg" />
-      </div>
-      <div className="mb-mixer-body">
-        <Fader id="deck1.volume" value={values["deck1.volume"]} label="Deck 1 volume" />
-        <div className="mb-eq-col">
-          <Knob id="deck1.high" label="HI" value={values["deck1.high"]} size="sm" />
-          <Knob id="deck1.mid" label="MID" value={values["deck1.mid"]} size="sm" />
-          <Knob id="deck1.low" label="LOW" value={values["deck1.low"]} size="sm" />
+      <div className="mb-mixer-channels">
+        <div className="mb-channel">
+          <Knob id="deck1.filter" label="FILTER" value={values["deck1.filter"]} size="lg" />
+          <div className="mb-channel-strip">
+            <Fader id="deck1.volume" value={values["deck1.volume"]} label="Deck 1 volume" />
+            <div className="mb-eq-col">
+              <Knob id="deck1.high" label="HI" value={values["deck1.high"]} size="sm" />
+              <Knob id="deck1.mid" label="MID" value={values["deck1.mid"]} size="sm" />
+              <Knob id="deck1.low" label="LOW" value={values["deck1.low"]} size="sm" />
+            </div>
+          </div>
         </div>
+
         <div className="mb-meters" aria-hidden>
           <span />
           <span />
         </div>
-        <div className="mb-eq-col">
-          <Knob id="deck2.high" label="HI" value={values["deck2.high"]} size="sm" />
-          <Knob id="deck2.mid" label="MID" value={values["deck2.mid"]} size="sm" />
-          <Knob id="deck2.low" label="LOW" value={values["deck2.low"]} size="sm" />
+
+        <div className="mb-channel">
+          <Knob id="deck2.filter" label="FILTER" value={values["deck2.filter"]} size="lg" />
+          <div className="mb-channel-strip">
+            <div className="mb-eq-col">
+              <Knob id="deck2.high" label="HI" value={values["deck2.high"]} size="sm" />
+              <Knob id="deck2.mid" label="MID" value={values["deck2.mid"]} size="sm" />
+              <Knob id="deck2.low" label="LOW" value={values["deck2.low"]} size="sm" />
+            </div>
+            <Fader id="deck2.volume" value={values["deck2.volume"]} label="Deck 2 volume" />
+          </div>
         </div>
-        <Fader id="deck2.volume" value={values["deck2.volume"]} label="Deck 2 volume" />
       </div>
     </div>
   );
@@ -369,10 +378,63 @@ function DeckEqPane({ deck, values }: { deck: 1 | 2; values: LiveDeckValues }) {
     <div className="mb-deck-eq">
       <Knob id={p("filter")} label="FILTER" value={values[p("filter")]} size="lg" />
       <div className="mb-deck-eq-row">
-        <Knob id={p("high")} label="HI" value={values[p("high")]} />
-        <Knob id={p("mid")} label="MID" value={values[p("mid")]} />
-        <Knob id={p("low")} label="LOW" value={values[p("low")]} />
         <Fader id={p("volume")} value={values[p("volume")]} label={`Deck ${deck} volume`} />
+        <div className="mb-eq-col mb-eq-col-row">
+          <Knob id={p("high")} label="HI" value={values[p("high")]} />
+          <Knob id={p("mid")} label="MID" value={values[p("mid")]} />
+          <Knob id={p("low")} label="LOW" value={values[p("low")]} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WavesPane({
+  peaks1,
+  peaks2,
+  playhead1,
+  playhead2,
+  duration1,
+  duration2,
+  cues1,
+  cues2,
+  playing1,
+  playing2,
+}: {
+  peaks1: Float32Array;
+  peaks2: Float32Array;
+  playhead1: number;
+  playhead2: number;
+  duration1: number;
+  duration2: number;
+  cues1: (number | null)[];
+  cues2: (number | null)[];
+  playing1: boolean;
+  playing2: boolean;
+}) {
+  return (
+    <div className="mb-waves">
+      <div className="mb-wave-lane">
+        <span className="mb-wave-tag">1</span>
+        <WaveformStrip
+          label="1"
+          peaks={peaks1}
+          playhead={playhead1}
+          duration={duration1}
+          cues={cues1}
+          playing={playing1}
+        />
+      </div>
+      <div className="mb-wave-lane">
+        <span className="mb-wave-tag">2</span>
+        <WaveformStrip
+          label="2"
+          peaks={peaks2}
+          playhead={playhead2}
+          duration={duration2}
+          cues={cues2}
+          playing={playing2}
+        />
       </div>
     </div>
   );
@@ -397,6 +459,12 @@ type Props = {
   loopPad2?: number | null;
   neural1?: boolean[];
   neural2?: boolean[];
+  peaks1?: Float32Array;
+  peaks2?: Float32Array;
+  playhead1?: number;
+  playhead2?: number;
+  duration1?: number;
+  duration2?: number;
   select1: ReactNode;
   select2: ReactNode;
 };
@@ -420,11 +488,17 @@ export function MobileBooth({
   loopPad2 = null,
   neural1 = [],
   neural2 = [],
+  peaks1 = new Float32Array(0),
+  peaks2 = new Float32Array(0),
+  playhead1 = 0,
+  playhead2 = 0,
+  duration1 = 1,
+  duration2 = 1,
   select1,
   select2,
 }: Props) {
   const [focus, setFocus] = useState<FocusPane>("mix");
-  const [surface, setSurface] = useState<Surface>("platters");
+  const [surface, setSurface] = useState<Surface>("mixer");
   const scrollerRef = useRef<HTMLDivElement>(null);
   const suppressScroll = useRef(false);
 
@@ -478,21 +552,35 @@ export function MobileBooth({
         );
       }
       return (
-        <div className="mb-dual-jogs">
-          <JogWheel
-            deck={1}
-            playing={playing1}
-            touching={touching1}
-            jogAngle={jogAngle1}
-            size="sm"
+        <div className="mb-waves-mix">
+          <WavesPane
+            peaks1={peaks1}
+            peaks2={peaks2}
+            playhead1={playhead1}
+            playhead2={playhead2}
+            duration1={duration1}
+            duration2={duration2}
+            cues1={cues1}
+            cues2={cues2}
+            playing1={playing1}
+            playing2={playing2}
           />
-          <JogWheel
-            deck={2}
-            playing={playing2}
-            touching={touching2}
-            jogAngle={jogAngle2}
-            size="sm"
-          />
+          <div className="mb-dual-jogs mb-dual-jogs-compact">
+            <JogWheel
+              deck={1}
+              playing={playing1}
+              touching={touching1}
+              jogAngle={jogAngle1}
+              size="sm"
+            />
+            <JogWheel
+              deck={2}
+              playing={playing2}
+              touching={touching2}
+              jogAngle={jogAngle2}
+              size="sm"
+            />
+          </div>
         </div>
       );
     }
@@ -507,6 +595,9 @@ export function MobileBooth({
     const cues = deck === 1 ? cues1 : cues2;
     const loopPad = deck === 1 ? loopPad1 : loopPad2;
     const neural = deck === 1 ? neural1 : neural2;
+    const peaks = deck === 1 ? peaks1 : peaks2;
+    const playhead = deck === 1 ? playhead1 : playhead2;
+    const duration = deck === 1 ? duration1 : duration2;
 
     return (
       <div className="mb-deck-focus">
@@ -516,13 +607,25 @@ export function MobileBooth({
         ) : surface === "pads" ? (
           <PadBank deck={deck} pads={pads} cues={cues} loopPad={loopPad} neural={neural} />
         ) : (
-          <JogWheel
-            deck={deck}
-            playing={playing}
-            touching={touching}
-            jogAngle={jogAngle}
-            size="lg"
-          />
+          <div className="mb-deck-waves">
+            <div className="mb-wave-lane">
+              <WaveformStrip
+                label={String(deck)}
+                peaks={peaks}
+                playhead={playhead}
+                duration={duration}
+                cues={cues}
+                playing={playing}
+              />
+            </div>
+            <JogWheel
+              deck={deck}
+              playing={playing}
+              touching={touching}
+              jogAngle={jogAngle}
+              size="lg"
+            />
+          </div>
         )}
       </div>
     );
@@ -538,7 +641,6 @@ export function MobileBooth({
           </strong>
           {select1}
         </div>
-        <div className="mb-load-rec" aria-hidden />
         <div className="mb-load">
           <span className="mb-load-deck">2</span>
           <strong className="mb-load-title" title={title2}>
@@ -552,7 +654,7 @@ export function MobileBooth({
         {(
           [
             ["mixer", "Mixer"],
-            ["platters", "Platters"],
+            ["waves", "Waveforms"],
             ["pads", "Pads"],
           ] as const
         ).map(([id, label]) => (
