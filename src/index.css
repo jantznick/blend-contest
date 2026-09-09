@@ -1,0 +1,65 @@
+:root {
+  --bg: #f3efe6;
+  --bg-deep: #e8e1d4;
+  --ink: #1a1814;
+  --ink-muted: #5c564c;
+  --line: #cfc6b6;
+  --accent: #0d7a6f;
+  --accent-soft: #d3ebe7;
+  --warn: #c45c26;
+  --warn-soft: #f3ddd0;
+  --deck: #1e1c1a;
+  --deck-panel: #2a2724;
+  --deck-line: #3d3934;
+  --led: #3dffa8;
+  --led-dim: #1a5c42;
+  --cue: #f0e6a8;
+  --hot: #ff6b4a;
+  --play: #5eead4;
+  --font: "Outfit", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: var(--font);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, #dceee9 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, #efe4d4 0%, transparent 50%),
+    var(--bg);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent);
+}
