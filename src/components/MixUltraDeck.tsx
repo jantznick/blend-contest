@@ -344,8 +344,14 @@ function DeckWing({
         onPointerUp={jogUp}
         onPointerCancel={jogUp}
       >
-        <div className="mx-jog-ring" style={{ transform: `rotate(${jogAngle}deg)` }}>
-          <div className={`mx-jog-hub${playing && !touching ? " spinning" : ""}`}>{deck}</div>
+        <div className="mx-jog-platter" style={{ transform: `rotate(${jogAngle}deg)` }}>
+          <div className={`mx-jog-vinyl${playing && !touching ? " spinning" : ""}`}>
+            <span className="mx-jog-grooves" aria-hidden />
+            <span className="mx-jog-sticker">
+              <span className="mx-jog-spindle" />
+              <span className="mx-jog-deck-num">{deck}</span>
+            </span>
+          </div>
         </div>
       </div>
       <div className="mx-transport">
