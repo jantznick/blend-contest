@@ -20,8 +20,8 @@ import {
 } from "../mix/timingFeedback";
 import { useLiveController, type PadCueEvent } from "../midi/useLiveController";
 import { useHardwareArm } from "../context/HardwareArmContext";
-import { DjBooth } from "./DjBooth";
 import { HardwareGrade } from "./HardwareLabShell";
+import { MixUltraDeck } from "./MixUltraDeck";
 import { WaveformStrip } from "./WaveformStrip";
 
 type SessionPhase = "idle" | "recording" | "graded";
@@ -84,7 +84,8 @@ function DeckLoad({
   };
 
   return (
-    <div className="dj-load">
+    <div className="ctrl-load">
+      <span className="ctrl-load-deck">D{deck}</span>
       <select
         value={value}
         disabled={locked || busy}
@@ -99,7 +100,7 @@ function DeckLoad({
       </select>
       <input
         type="number"
-        className="dj-load-bpm"
+        className="ctrl-load-bpm"
         min={60}
         max={200}
         value={bpm}
@@ -123,7 +124,7 @@ function DeckLoad({
   );
 }
 
-/** Single-viewport turntable contest — hosted tracks on dual platters, no page scroll. */
+/** Contest UI: DDJ-style two-deck controller (jogs, pads, mixer) in one viewport. */
 export function ContestPage({
   initialTarget = "free",
 }: {
@@ -283,52 +284,75 @@ export function ContestPage({
 
   const bed1 = trackById(tt.track1);
   const bed2 = trackById(tt.track2);
+  const targetMeta = TRANSITION_RECIPES.find((r) => r.id === target);
 
   return (
-    <div className={`dj-app${recording ? " is-live" : ""}`}>
-      <header className="dj-top">
-        <div className="dj-brand-block">
-          <h1 className="dj-brand">Blend Contest</h1>
-          <p className="dj-tag">Mix two tracks. Get scored.</p>
+    <div className={`ctrl-app${recording ? " is-live" : ""}`}>
+      <header className="ctrl-top">
+        <h1 className="ctrl-brand">Blend Contest</h1>
+
+        <div className="ctrl-loads">
+          <DeckLoad
+            deck={1}
+            tracks={tt.tracks}
+            value={tt.track1}
+            locked={locked}
+            onSelect={(id) => {
+              if (!locked) void tt.setTrack(1, id);
+            }}
+            onUploaded={(id) => {
+              if (!locked) void tt.setTrack(1, id);
+            }}
+          />
+          <DeckLoad
+            deck={2}
+            tracks={tt.tracks}
+            value={tt.track2}
+            locked={locked}
+            onSelect={(id) => {
+              if (!locked) void tt.setTrack(2, id);
+            }}
+            onUploaded={(id) => {
+              if (!locked) void tt.setTrack(2, id);
+            }}
+          />
         </div>
 
-        <div className="dj-actions">
+        <div className="ctrl-actions">
           {phase === "idle" && (
-            <button type="button" className="dj-action primary" onClick={() => void go()}>
+            <button type="button" className="ctrl-btn primary" onClick={() => void go()}>
               Go
             </button>
           )}
           {phase === "recording" && (
-            <button type="button" className="dj-action danger" onClick={done}>
+            <button type="button" className="ctrl-btn danger" onClick={done}>
               Done
             </button>
           )}
           {phase === "graded" && (
-            <button type="button" className="dj-action primary" onClick={resetSession}>
+            <button type="button" className="ctrl-btn primary" onClick={resetSession}>
               Again
             </button>
           )}
-          <button type="button" className="dj-action" onClick={resetAll}>
+          <button type="button" className="ctrl-btn" onClick={resetAll}>
             Reset
           </button>
         </div>
 
-        <div className="dj-targets">
-          <label className="dj-style">
-            <span>Beds</span>
-            <select
-              value={genre}
-              disabled={locked}
-              onChange={(e) => setGenre(e.target.value as GenreId)}
-            >
-              {GENRE_OPTIONS.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="dj-modes" role="tablist" aria-label="Blend type">
+        <div className="ctrl-targets">
+          <select
+            value={genre}
+            disabled={locked}
+            aria-label="Track beds"
+            onChange={(e) => setGenre(e.target.value as GenreId)}
+          >
+            {GENRE_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <div className="ctrl-modes" role="tablist" aria-label="Blend type">
             {TRANSITION_RECIPES.map((r) => (
               <button
                 key={r.id}
@@ -346,7 +370,7 @@ export function ContestPage({
         </div>
       </header>
 
-      <div className="dj-waves">
+      <div className="ctrl-waves">
         <WaveformStrip
           label="1"
           peaks={tt.peaks1}
@@ -365,53 +389,35 @@ export function ContestPage({
         />
       </div>
 
-      {tt.error && <p className="dj-error">{tt.error}</p>}
+      {tt.error && <p className="ctrl-error">{tt.error}</p>}
 
-      <div className="dj-stage">
-        <DjBooth
+      <div className="ctrl-stage">
+        <MixUltraDeck
+          interactive
           values={live.values}
           pressed={live.pressed}
           playing1={tt.playing1}
           playing2={tt.playing2}
+          pads1={live.pads1}
+          pads2={live.pads2}
+          cues1={tt.cues1}
+          cues2={tt.cues2}
           jogAngle1={live.jogAngle1}
           jogAngle2={live.jogAngle2}
-          title1={bed1.title}
-          title2={bed2.title}
-          bpm1={bed1.bpm}
-          bpm2={bed2.bpm}
-          select1={
-            <DeckLoad
-              deck={1}
-              tracks={tt.tracks}
-              value={tt.track1}
-              locked={locked}
-              onSelect={(id) => {
-                if (!locked) void tt.setTrack(1, id);
-              }}
-              onUploaded={(id) => {
-                if (!locked) void tt.setTrack(1, id);
-              }}
-            />
-          }
-          select2={
-            <DeckLoad
-              deck={2}
-              tracks={tt.tracks}
-              value={tt.track2}
-              locked={locked}
-              onSelect={(id) => {
-                if (!locked) void tt.setTrack(2, id);
-              }}
-              onUploaded={(id) => {
-                if (!locked) void tt.setTrack(2, id);
-              }}
-            />
+          trackLabel1={`${bed1.title} · ${bed1.bpm}`}
+          trackLabel2={`${bed2.title} · ${bed2.bpm}`}
+          prompt={
+            recording
+              ? `${targetMeta?.title ?? "Mix"} — EQ · filter · XF · pads`
+              : phase === "graded"
+                ? "Scored below — Again for another pass"
+                : "Load tracks, hit Go, mix on the controller"
           }
         />
       </div>
 
       {grade && (
-        <div className="dj-grade">
+        <div className="ctrl-grade">
           <HardwareGrade pass={grade.passed}>
             <p>
               <strong>{grade.passed ? "Pass" : "Retry"}.</strong> {grade.summary}
@@ -421,10 +427,6 @@ export function ContestPage({
                 {d.label} ({d.score}): {d.tip}
               </p>
             ))}
-            <p className="footer-note">
-              Score is MIDI / on-screen control motion + tempo scaffold — not spectral audio analysis
-              yet. Fixed hosted song pairs and leaderboards come next.
-            </p>
           </HardwareGrade>
         </div>
       )}
