@@ -28,8 +28,17 @@ type Channel = {
   startOffset: number;
   /** ctx.currentTime when source started */
   startedAt: number;
+  /** Current playback rate (may be momentarily nudged by jog / FX) */
   playbackRate: number;
+  /** Tempo fader rate — restored after jog / stop / FX release */
+  pitchRate: number;
   hotCues: (number | null)[];
+  /** Active auto-loop length in beats, or null for full-buffer loop */
+  loopBeats: number | null;
+  loopStartSec: number;
+  loopLenSec: number;
+  /** NEURAL stem-style EQ kills */
+  neuralMutes: boolean[];
 };
 
 export type TurntableEngine = {
@@ -186,7 +195,12 @@ function wireChannel(ctx: AudioContext): Omit<Channel, "trackId" | "buffer"> {
     startOffset: 0,
     startedAt: 0,
     playbackRate: 1,
+    pitchRate: 1,
     hotCues: Array(8).fill(null),
+    loopBeats: null,
+    loopStartSec: 0,
+    loopLenSec: 0,
+    neuralMutes: Array(8).fill(false),
   };
 }
 
@@ -230,32 +244,54 @@ function stopChannel(ch: Channel) {
   }
   ch.source = null;
   ch.playing = false;
-  ch.playbackRate = 1;
+  ch.playbackRate = ch.pitchRate;
 }
 
 function getPlayhead(ch: Channel): number {
   const dur = ch.buffer.duration || 1;
   if (!ch.playing) return ((ch.startOffset % dur) + dur) % dur;
   const elapsed = (ch.source!.context.currentTime - ch.startedAt) * ch.playbackRate;
+  if (ch.loopBeats != null && ch.loopLenSec > 0) {
+    const rel = ((elapsed % ch.loopLenSec) + ch.loopLenSec) % ch.loopLenSec;
+    return ch.loopStartSec + rel;
+  }
   return ((ch.startOffset + elapsed) % dur + dur) % dur;
+}
+
+function applyLoopPoints(source: AudioBufferSourceNode, ch: Channel) {
+  const dur = ch.buffer.duration || 1;
+  if (ch.loopBeats != null && ch.loopLenSec > 0) {
+    source.loop = true;
+    source.loopStart = ch.loopStartSec;
+    source.loopEnd = Math.min(dur, ch.loopStartSec + ch.loopLenSec);
+  } else {
+    source.loop = true;
+    source.loopStart = 0;
+    source.loopEnd = dur;
+  }
 }
 
 function startChannel(engine: TurntableEngine, ch: Channel, offset?: number) {
   stopChannel(ch);
   const off = offset ?? ch.startOffset;
   const dur = ch.buffer.duration || 1;
-  const startAt = ((off % dur) + dur) % dur;
+  let startAt = ((off % dur) + dur) % dur;
+  if (ch.loopBeats != null && ch.loopLenSec > 0) {
+    if (startAt < ch.loopStartSec || startAt >= ch.loopStartSec + ch.loopLenSec) {
+      startAt = ch.loopStartSec;
+    }
+  }
   const source = engine.ctx.createBufferSource();
   source.buffer = ch.buffer;
-  source.loop = true;
-  source.playbackRate.value = 1;
+  applyLoopPoints(source, ch);
+  source.playbackRate.value = ch.pitchRate;
   source.connect(ch.filter);
   source.start(0, startAt);
   ch.source = source;
   ch.playing = true;
   ch.startOffset = startAt;
   ch.startedAt = engine.ctx.currentTime;
-  ch.playbackRate = 1;
+  ch.playbackRate = ch.pitchRate;
 }
 
 export function getHotCues(engine: TurntableEngine, deck: 1 | 2): (number | null)[] {
@@ -299,18 +335,179 @@ export function handlePad(
   return ch.hotCues.slice();
 }
 
+/** Classic auto-loop lengths (beats). */
+export const LOOP_PAD_BEATS = [0.25, 0.5, 1, 2, 4, 8, 16, 32] as const;
+
+export function getLoopPad(engine: TurntableEngine, deck: 1 | 2): number | null {
+  const ch = deck === 1 ? engine.deck1 : engine.deck2;
+  if (ch.loopBeats == null) return null;
+  const idx = LOOP_PAD_BEATS.findIndex((b) => b === ch.loopBeats);
+  return idx >= 0 ? idx : null;
+}
+
+export function getNeuralMutes(engine: TurntableEngine, deck: 1 | 2): boolean[] {
+  return (deck === 1 ? engine.deck1 : engine.deck2).neuralMutes.slice();
+}
+
+function clearLoop(ch: Channel) {
+  ch.loopBeats = null;
+  ch.loopStartSec = 0;
+  ch.loopLenSec = 0;
+}
+
+function setBeatLoop(engine: TurntableEngine, ch: Channel, beats: number, bpm: number) {
+  const head = getPlayhead(ch);
+  const beatSec = 60 / Math.max(1, bpm * ch.pitchRate);
+  const len = Math.max(0.05, beats * beatSec);
+  const dur = ch.buffer.duration || 1;
+  ch.loopBeats = beats;
+  ch.loopStartSec = Math.min(head, Math.max(0, dur - len));
+  ch.loopLenSec = len;
+  if (ch.playing) startChannel(engine, ch, ch.loopStartSec);
+}
+
+function handleLoopPad(engine: TurntableEngine, deck: 1 | 2, pad: number, bpm: number) {
+  const ch = deck === 1 ? engine.deck1 : engine.deck2;
+  const beats = LOOP_PAD_BEATS[pad] ?? 1;
+  if (ch.loopBeats === beats) {
+    const head = getPlayhead(ch);
+    clearLoop(ch);
+    if (ch.playing) startChannel(engine, ch, head);
+  } else {
+    setBeatLoop(engine, ch, beats, bpm);
+  }
+}
+
+/** Momentary FX while pad held; EQ restored by applyLiveMix on release. */
+function handleFxPad(engine: TurntableEngine, deck: 1 | 2, pad: number, down: boolean) {
+  const ch = deck === 1 ? engine.deck1 : engine.deck2;
+  if (!down) return;
+  const t = engine.ctx.currentTime;
+  switch (pad) {
+    case 0:
+      ch.filter.type = "lowpass";
+      ch.filter.frequency.setTargetAtTime(420, t, 0.02);
+      ch.filter.Q.setTargetAtTime(1.2, t, 0.02);
+      break;
+    case 1:
+      ch.filter.type = "highpass";
+      ch.filter.frequency.setTargetAtTime(1800, t, 0.02);
+      ch.filter.Q.setTargetAtTime(1.1, t, 0.02);
+      break;
+    case 2:
+      ch.low.gain.setTargetAtTime(-48, t, 0.02);
+      break;
+    case 3:
+      ch.mid.gain.setTargetAtTime(-36, t, 0.02);
+      break;
+    case 4:
+      ch.high.gain.setTargetAtTime(-36, t, 0.02);
+      break;
+    case 5:
+      ch.playbackRate = Math.max(0.25, ch.pitchRate * 0.5);
+      if (ch.source) ch.source.playbackRate.setTargetAtTime(ch.playbackRate, t, 0.03);
+      break;
+    case 6:
+      ch.gain.gain.setTargetAtTime(0.02, t, 0.01);
+      break;
+    case 7:
+      ch.playbackRate = Math.max(0.15, ch.pitchRate * 0.2);
+      if (ch.source) ch.source.playbackRate.setTargetAtTime(ch.playbackRate, t, 0.08);
+      break;
+    default:
+      break;
+  }
+}
+
+function applyNeuralEq(ch: Channel) {
+  const [kick, bass, mid, hat, voc, ins, mute] = ch.neuralMutes;
+  let lowG = 0;
+  let midG = 0;
+  let highG = 0;
+  if (mute) {
+    lowG = midG = highG = -48;
+  } else {
+    if (kick) lowG = -48;
+    if (bass) lowG = Math.min(lowG, -28);
+    if (mid || voc || ins) midG = -36;
+    if (hat) highG = -36;
+  }
+  ch.low.type = "lowshelf";
+  ch.low.frequency.value = 180;
+  ch.low.gain.value = lowG;
+  ch.mid.type = "peaking";
+  ch.mid.frequency.value = 1000;
+  ch.mid.Q.value = 0.9;
+  ch.mid.gain.value = midG;
+  ch.high.type = "highshelf";
+  ch.high.frequency.value = 6000;
+  ch.high.gain.value = highG;
+}
+
+function handleNeuralPad(engine: TurntableEngine, deck: 1 | 2, pad: number) {
+  const ch = deck === 1 ? engine.deck1 : engine.deck2;
+  if (pad === 7) {
+    ch.neuralMutes = Array(8).fill(false);
+  } else {
+    ch.neuralMutes[pad] = !ch.neuralMutes[pad];
+  }
+  applyNeuralEq(ch);
+}
+
+export type PerformancePadResult = {
+  cues: (number | null)[];
+  loopPad: number | null;
+  neural: boolean[];
+};
+
+/**
+ * Route pad hits by mode. HOT CUE sets/jumps; LOOP toggles beat loops;
+ * FX is momentary; NEURAL toggles stem-style EQ kills. SHIFT clear only in HOT CUE.
+ */
+export function handlePerformancePad(
+  engine: TurntableEngine,
+  deck: 1 | 2,
+  pad: number,
+  opts: { clear: boolean; down: boolean; modeBase: number; bpm: number },
+): PerformancePadResult {
+  const ch = deck === 1 ? engine.deck1 : engine.deck2;
+  const { modeBase } = opts;
+
+  if (modeBase === 0) {
+    if (opts.down) handlePad(engine, deck, pad, opts.clear);
+  } else if (modeBase === 16) {
+    if (opts.down) handleLoopPad(engine, deck, pad, opts.bpm);
+  } else if (modeBase === 32) {
+    handleFxPad(engine, deck, pad, opts.down);
+    if (!opts.down) {
+      ch.playbackRate = ch.pitchRate;
+      if (ch.source && ch.playing) {
+        ch.source.playbackRate.setTargetAtTime(ch.pitchRate, engine.ctx.currentTime, 0.04);
+      }
+    }
+  } else if (modeBase === 80) {
+    if (opts.down) handleNeuralPad(engine, deck, pad);
+  }
+
+  return {
+    cues: ch.hotCues.slice(),
+    loopPad: getLoopPad(engine, deck),
+    neural: ch.neuralMutes.slice(),
+  };
+}
+
 /** Relative jog ticks (value−64). Nudges rate while playing, scrubs while stopped. */
 export function handleJog(engine: TurntableEngine, deck: 1 | 2, delta: number) {
   if (delta === 0) return;
   const ch = deck === 1 ? engine.deck1 : engine.deck2;
   if (ch.playing && ch.source) {
-    const rate = Math.max(0.25, Math.min(3, 1 + delta * 0.12));
+    const rate = Math.max(0.25, Math.min(3, ch.pitchRate + delta * 0.12));
     ch.playbackRate = rate;
     ch.source.playbackRate.setTargetAtTime(rate, engine.ctx.currentTime, 0.01);
-    ch.source.playbackRate.setTargetAtTime(1, engine.ctx.currentTime + 0.08, 0.05);
+    ch.source.playbackRate.setTargetAtTime(ch.pitchRate, engine.ctx.currentTime + 0.08, 0.05);
     window.setTimeout(() => {
       if (ch.source && ch.playing) {
-        ch.playbackRate = 1;
+        ch.playbackRate = ch.pitchRate;
       }
     }, 120);
   } else {
@@ -342,6 +539,8 @@ export async function loadTrack(engine: TurntableEngine, deck: 1 | 2, trackId: T
   ch.buffer = await loadTrackBuffer(engine.ctx, trackById(trackId));
   ch.startOffset = 0;
   ch.hotCues = Array(8).fill(null);
+  clearLoop(ch);
+  ch.neuralMutes = Array(8).fill(false);
   if (wasPlaying) startChannel(engine, ch, 0);
 }
 
@@ -380,10 +579,17 @@ export function applyDeckPitch(engine: TurntableEngine, deck: 1 | 2, cc: number)
   const ch = deck === 1 ? engine.deck1 : engine.deck2;
   // 64 = 1.0, full range ≈ ±8% (typical DJ pitch)
   const rate = 1 + ((cc - 64) / 64) * 0.08;
+  ch.pitchRate = rate;
   ch.playbackRate = rate;
   if (ch.source && ch.playing) {
     ch.source.playbackRate.setTargetAtTime(rate, engine.ctx.currentTime, 0.02);
   }
+}
+
+/** Catalog BPM × tempo fader (±8% at ends). */
+export function effectiveBpm(catalogBpm: number, pitchCc: number): number {
+  const rate = 1 + ((pitchCc - 64) / 64) * 0.08;
+  return catalogBpm * rate;
 }
 
 export function applyLiveMix(
@@ -403,6 +609,9 @@ export function applyLiveMix(
   applyDeckPitch(engine, 2, v("deck2.pitch", 64));
   applyCrossfader(engine, v("crossfader", 64), v("deck1.volume", 100), v("deck2.volume", 100));
   applyMaster(engine, v("master", 100));
+  // Neural stem kills win over mixer EQ while latched
+  if (engine.deck1.neuralMutes.some(Boolean)) applyNeuralEq(engine.deck1);
+  if (engine.deck2.neuralMutes.some(Boolean)) applyNeuralEq(engine.deck2);
 }
 
 export async function disposeTurntable(engine: TurntableEngine | null) {

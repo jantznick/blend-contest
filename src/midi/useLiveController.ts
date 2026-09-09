@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-  identifyHotCuePad,
   identifyMixUltra,
   identifyPad,
   MIX_ULTRA_MAP,
@@ -35,6 +34,9 @@ export type PadCueEvent = {
   deck: 1 | 2;
   pad: number;
   clear: boolean;
+  down: boolean;
+  /** 0 HOT CUE, 16 LOOP, 32 FX, 80 NEURAL */
+  modeBase: number;
 };
 
 /** Mirror Mix Ultra controls, pads, and jog. */
@@ -64,14 +66,25 @@ export function useLiveController(
             next[pad.pad] = true;
             return next;
           });
-          // Only HOT CUE note range becomes cues — never silently map LOOP/FX pads.
-          const hot = identifyHotCuePad(msg);
-          if (hot) onPad?.({ deck: hot.deck, pad: hot.pad, clear: hot.clear });
+          onPad?.({
+            deck: pad.deck,
+            pad: pad.pad,
+            clear: pad.clear,
+            down: true,
+            modeBase: pad.modeBase,
+          });
         } else if (msg.kind === "noteoff") {
           setPads((prev) => {
             const next = [...prev];
             next[pad.pad] = false;
             return next;
+          });
+          onPad?.({
+            deck: pad.deck,
+            pad: pad.pad,
+            clear: pad.clear,
+            down: false,
+            modeBase: pad.modeBase,
           });
         }
         return;

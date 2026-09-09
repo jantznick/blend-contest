@@ -87,6 +87,8 @@ export type PadHit = {
   pad: number; // 0–7
   /** shift-clear style (notes 8–15 in hot-cue mode) */
   clear: boolean;
+  /** MIDI note block base: 0 HOT CUE, 16 LOOP, 32 FX, 80 NEURAL */
+  modeBase: number;
 };
 
 function padDeck(msg: ParsedMidi): 1 | 2 | null {
@@ -103,8 +105,8 @@ export function identifyHotCuePad(msg: ParsedMidi): PadHit | null {
   const deck = padDeck(msg);
   if (!deck) return null;
   const n = msg.number;
-  if (n >= 0 && n < 8) return { deck, pad: n, clear: false };
-  if (n >= 8 && n < 16) return { deck, pad: n - 8, clear: true };
+  if (n >= 0 && n < 8) return { deck, pad: n, clear: false, modeBase: 0 };
+  if (n >= 8 && n < 16) return { deck, pad: n - 8, clear: true, modeBase: 0 };
   return null;
 }
 
@@ -121,7 +123,8 @@ export function identifyPad(msg: ParsedMidi): PadHit | null {
   const n = msg.number;
   for (const base of PAD_BASES) {
     if (n >= base && n < base + 8) {
-      return { deck, pad: n - base, clear: base === 8 };
+      if (base === 8) return { deck, pad: n - 8, clear: true, modeBase: 0 };
+      return { deck, pad: n - base, clear: false, modeBase: base };
     }
   }
   return null;
