@@ -13,10 +13,11 @@ Contest product: grade a mix between **two songs**. Key Mixer stays harmonic pla
 
 ## Suggested next tasks
 
-1. `npm install && npm run build` — fix any TS strict issues
-2. Smoke-test in browser: Arm → Start → move XF/EQ → End & grade
-3. Add fixed contest rounds + score persistence
-4. Optional: MediaRecorder on master bus for audio review
+1. Follow [docs/plans/tidal-integration.md](docs/plans/tidal-integration.md) — Horizon A (search → load decks)
+2. `npm install && npm run build` — fix any TS strict issues
+3. Smoke-test in browser: Arm → Start → move XF/EQ → End & grade
+4. Horizon B: admin daily Tidal pair + score persistence
+5. Optional: MediaRecorder on master bus for audio review
 
 ## Source reference
 

@@ -31,6 +31,7 @@ No backend, Tidal, or auth in v1.
 
 ## Next (for a follow-up agent)
 
+- **Tidal:** see [docs/plans/tidal-integration.md](docs/plans/tidal-integration.md) (search → deck load first; admin daily pairs later)
 - Fixed contest song pairs + submit / leaderboard API
 - Record master bus + optional audio-based grading
 - Trim unused CSS from Hercules `App.css` port
