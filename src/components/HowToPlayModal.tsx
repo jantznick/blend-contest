@@ -12,6 +12,7 @@ const SECTIONS: { id: SectionId; label: string }[] = [
 
 const MODE_STEPS: Record<string, string[]> = {
   free: [
+    "Always hand off Deck 1 → Deck 2 (XF left → right). Reverse blends are not graded.",
     "Pick any handoff style — long fade, bass carve, filter sweep, or a quick cut.",
     "Match tempos with the pitch/tempo faders before you blend.",
     "Make a clear handoff (crossfader and/or channel faders), then hit Done.",
@@ -19,13 +20,13 @@ const MODE_STEPS: Record<string, string[]> = {
   ],
   "long-blend": [
     "Leave LOW / MID / HIGH near 12 o’clock — this mode is faders only.",
-    "Bring Deck 2 in with channel faders and/or a slow crossfader travel (~1–4 bars).",
+    "Bring Deck 2 in with channel faders and/or a slow crossfader travel left → right (~1–4 bars).",
     "Fade Deck 1 out as Deck 2 takes the room.",
     "Avoid bass swaps or big EQ moves; those belong in Bass swap.",
   ],
   "bass-swap": [
     "Start with both decks in the mix path; park Deck 2 LOW near center, then kill it (left).",
-    "Blend across on the crossfader while only one bassline stays full.",
+    "Blend XF left → right while only one bassline stays full.",
     "Hand the bass to Deck 2: restore Deck 2 LOW, then kill Deck 1 LOW.",
     "Aim the bass carve for roughly ~2–6 bars at the track BPM.",
   ],
@@ -33,13 +34,13 @@ const MODE_STEPS: Record<string, string[]> = {
     "On Deck 2, twist Filter right (thin / high-pass feel) before or as you start the blend.",
     "Carve incoming LOW so both kicks don’t muddy the middle of the XF.",
     "Sweep Filter back toward center as you finish the handoff (~1–4 bars).",
-    "Crossfade or channel-fade into Deck 2 while the filter opens.",
+    "Crossfade or channel-fade into Deck 2 (left → right) while the filter opens.",
   ],
   "xfader-cut": [
     "Both decks loud, EQ flat at 12 o’clock.",
     "Count a beat or two, then throw the crossfader left → right quickly (~¼–2 bars).",
     "Don’t carve bass or ride MID/HIGH — the cut is the move.",
-    "A slightly fast snap can still pass; an incomplete XF travel will not.",
+    "A slightly fast snap can still pass; an incomplete XF travel (or right → left) will not.",
   ],
 };
 
@@ -129,8 +130,9 @@ export function HowToPlayModal({ open, onClose }: Props) {
                 on-screen Mix Ultra or a connected controller.
               </li>
               <li>
-                <strong>Mix the transition</strong> — match tempo, then perform the handoff for your
-                selected mode (see Blend modes below).
+                <strong>Mix the transition</strong> — match tempo, then hand off{" "}
+                <strong>Deck 1 → Deck 2</strong> (crossfader left → right) for your selected mode.
+                Reverse blends (Deck 2 → Deck 1) are not graded.
               </li>
               <li>
                 <strong>Done</strong> — grading runs on recorded control motion + a tempo/kick
@@ -146,7 +148,8 @@ export function HowToPlayModal({ open, onClose }: Props) {
           <section id="howto-modes" className="howto-section">
             <h3>Blend modes</h3>
             <p>
-              Each tab in the header is a recipe the grader listens for. Pick one before Go.
+              Each tab in the header is a recipe the grader listens for. Pick one before Go. Every
+              mode expects <strong>Deck 1 outgoing → Deck 2 incoming</strong> (XF left → right).
             </p>
             <div className="howto-modes">
               {TRANSITION_RECIPES.map((r) => (
@@ -166,6 +169,12 @@ export function HowToPlayModal({ open, onClose }: Props) {
           <section id="howto-grading" className="howto-section">
             <h3>How grading works</h3>
             <ul>
+              <li>
+                <strong>Direction is fixed:</strong> score only Deck 1 → Deck 2. The grader wants
+                crossfader left → right, Deck 2 as the incoming deck (bass kill / filter / channel
+                fader up), and Deck 1 fading out. Blending the other way usually marks the handoff
+                incomplete even if it sounds fine.
+              </li>
               <li>
                 While you mix, the app records crossfader, EQ, filter, channel faders, pitch, and
                 playhead samples — not a full spectral analysis of the audio yet.
