@@ -1,11 +1,11 @@
 # Blend Contest
 
-Standalone two-deck mix grader for contest-style rounds. Ported from the Mix Ultra practice core in [hercules](https://github.com/jantznick/hercules) — **not** an expansion of Key Mixer.
+Standalone two-deck mix grader for contest-style rounds.
 
 ## What it does (MVP)
 
 1. Load two tracks (bundled synth beds and/or local file upload)
-2. Arm browser audio (+ optional Hercules Mix Ultra via Web MIDI)
+2. Arm browser audio
 3. **Start transition** → mix with on-screen deck or hardware
 4. **End & grade** → `judgeBasicTransition` scores control motion (EQ / filter / XF / tempo scaffold)
 
@@ -33,9 +33,5 @@ No backend, Tidal, or auth in v1.
 
 - Fixed contest song pairs + submit / leaderboard API
 - Record master bus + optional audio-based grading
-- Trim unused CSS from Hercules `App.css` port
 - Anti-cheat / session replay of control logs
 
-## Provenance
-
-Core engine and Mix Ultra UI were copied from Hercules, then stripped of tutorials, Tidal free-play, Prisma, and curriculum routes. Contest shell lives in `src/components/ContestPage.tsx`.

@@ -1,4 +1,4 @@
-/** Minimal style lens for default bed pairs (ported from Hercules curriculum genres). */
+/** Minimal style lens for default bed pairs */
 
 export type GenreId = "any" | "house" | "hiphop" | "pop" | "dnb";
 

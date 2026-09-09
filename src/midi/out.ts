@@ -1,13 +1,13 @@
 import { getMidiAccess } from "./bus";
 
-/** Prefer the Mix Ultra / Hercules output if present; else first available. */
+/** Prefer the Mix Ultra output if present; else first available. */
 export function pickMidiOutput(): MIDIOutput | null {
   const access = getMidiAccess();
   if (!access) return null;
   const outputs = [...access.outputs.values()];
   if (outputs.length === 0) return null;
   const prefer = outputs.find((o) =>
-    /hercules|mix.?ultra|djcontrol/i.test(`${o.name ?? ""} ${o.manufacturer ?? ""}`),
+    /mix.?ultra|djcontrol/i.test(`${o.name ?? ""} ${o.manufacturer ?? ""}`),
   );
   return prefer ?? outputs[0] ?? null;
 }
