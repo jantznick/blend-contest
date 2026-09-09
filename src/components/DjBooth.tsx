@@ -1,5 +1,5 @@
 /**
- * djay-style dual turntable booth: big platters + compact mixer.
+ * Dual-deck booth UI: CDJ-style platters + mixer chassis.
  * Pointer/touch writes the same MIDI bus as Mix Ultra hardware.
  */
 import { useCallback, useRef, type PointerEvent as ReactPointerEvent } from "react";
@@ -27,7 +27,7 @@ function Knob({
 
   return (
     <div
-      className="dj-knob"
+      className="hw-knob"
       role="slider"
       aria-label={label}
       aria-valuemin={0}
@@ -41,7 +41,7 @@ function Knob({
       }}
       onPointerMove={(e) => {
         if (!dragRef.current) return;
-        injectControlCc(id, clamp127(dragRef.current.start + (dragRef.current.y - e.clientY)));
+        injectControlCc(id, clamp127(dragRef.current.start + (dragRef.current.y - e.clientY) * 0.9));
       }}
       onPointerUp={(e) => {
         dragRef.current = null;
@@ -53,10 +53,13 @@ function Knob({
       }}
       onDoubleClick={() => injectControlCc(id, 64)}
     >
-      <div className="dj-knob-cap">
-        <span className="dj-knob-needle" style={{ transform: `rotate(${deg}deg)` }} />
+      <div className="hw-knob-body">
+        <div className="hw-knob-ticks" aria-hidden />
+        <div className="hw-knob-cap" style={{ transform: `rotate(${deg}deg)` }}>
+          <span className="hw-knob-mark" />
+        </div>
       </div>
-      <span className="dj-knob-label">{label}</span>
+      <span className="hw-knob-label">{label}</span>
     </div>
   );
 }
@@ -92,7 +95,7 @@ function Fader({
 
   return (
     <div
-      className={`dj-fader${vertical ? " vert" : " horiz"}`}
+      className={`hw-fader${vertical ? " vert" : " horiz"}`}
       role="slider"
       aria-label={label}
       aria-valuemin={0}
@@ -109,9 +112,9 @@ function Fader({
         setFromClient(e.clientX, e.clientY);
       }}
     >
-      <div className="dj-fader-track" ref={trackRef}>
+      <div className="hw-fader-rail" ref={trackRef}>
         <span
-          className="dj-fader-thumb"
+          className="hw-fader-cap"
           style={vertical ? { bottom: `${pct}%` } : { left: `${pct}%` }}
         />
       </div>
@@ -119,13 +122,14 @@ function Fader({
   );
 }
 
-function Platter({
+function Deck({
   deck,
   title,
   bpm,
   playing,
   pressed,
   jogAngle,
+  pitch,
   trackSelect,
 }: {
   deck: 1 | 2;
@@ -134,12 +138,15 @@ function Platter({
   playing: boolean;
   pressed: LivePressed;
   jogAngle: number;
+  pitch?: number | null;
   trackSelect: ReactNode;
 }) {
   const playId = `deck${deck}.play` as MixUltraControl;
   const cueId = `deck${deck}.cue` as MixUltraControl;
+  const pitchId = `deck${deck}.pitch` as MixUltraControl;
   const touching = !!pressed[`deck${deck}.jogTouch` as MixUltraControl];
   const lastX = useRef<number | null>(null);
+  const outer = deck === 1;
 
   const jogDown = (e: ReactPointerEvent) => {
     e.preventDefault();
@@ -169,45 +176,75 @@ function Platter({
     window.setTimeout(() => injectControlNote(id, false), 80);
   };
 
-  return (
-    <section className={`dj-platter-col deck-${deck}`}>
-      <div className="dj-platter-meta">
-        <span className="dj-platter-deck">Deck {deck}</span>
-        <span className="dj-platter-title" title={title}>
-          {title}
-        </span>
-        <span className="dj-platter-bpm">{bpm} BPM</span>
-      </div>
-      {trackSelect}
-      <div
-        className={`dj-platter${playing ? " on" : ""}${touching ? " touch" : ""}`}
-        role="slider"
-        aria-label={`Deck ${deck} platter — drag to nudge`}
-        onPointerDown={jogDown}
-        onPointerMove={jogMove}
-        onPointerUp={jogUp}
-        onPointerCancel={jogUp}
-      >
-        <div className="dj-platter-disc" style={{ transform: `rotate(${jogAngle}deg)` }}>
-          <div className={`dj-platter-vinyl${playing && !touching ? " spinning" : ""}`}>
-            <span className="dj-platter-grooves" aria-hidden />
-            <span className="dj-platter-label">
-              <span className="dj-platter-spindle" />
-              <span className="dj-platter-num">{deck}</span>
+  const pitchEl = (
+    <div className="hw-pitch">
+      <span>TEMPO</span>
+      <Fader id={pitchId} value={pitch} label={`Deck ${deck} tempo`} />
+    </div>
+  );
+
+  const jog = (
+    <div
+      className={`hw-jog${playing ? " on" : ""}${touching ? " touch" : ""}`}
+      role="slider"
+      aria-label={`Deck ${deck} jog`}
+      onPointerDown={jogDown}
+      onPointerMove={jogMove}
+      onPointerUp={jogUp}
+      onPointerCancel={jogUp}
+    >
+      <div className="hw-jog-bezel">
+        <div className="hw-jog-ring" style={{ transform: `rotate(${jogAngle}deg)` }}>
+          <div className={`hw-jog-vinyl${playing && !touching ? " spinning" : ""}`}>
+            <span className="hw-jog-grooves" aria-hidden />
+            <span className="hw-jog-sheen" aria-hidden />
+            <span className="hw-jog-sticker">
+              <span className="hw-jog-spindle" />
+              <span className="hw-jog-num">{deck}</span>
             </span>
           </div>
         </div>
+        <div className={`hw-jog-led${playing ? " lit" : ""}`} aria-hidden />
       </div>
-      <div className="dj-transport">
-        <button type="button" className="dj-tbtn cue" onClick={() => tap(cueId)}>
-          Cue
+    </div>
+  );
+
+  return (
+    <section className={`hw-deck deck-${deck}`}>
+      <header className="hw-deck-head">
+        <div className="hw-deck-badge">DECK {deck}</div>
+        <div className="hw-deck-track">
+          <strong title={title}>{title}</strong>
+          <span>{bpm} BPM</span>
+        </div>
+        {trackSelect}
+      </header>
+
+      <div className="hw-deck-main">
+        {outer ? (
+          <>
+            {pitchEl}
+            {jog}
+          </>
+        ) : (
+          <>
+            {jog}
+            {pitchEl}
+          </>
+        )}
+      </div>
+
+      <div className="hw-transport">
+        <button type="button" className="hw-cue" onClick={() => tap(cueId)}>
+          CUE
         </button>
         <button
           type="button"
-          className={`dj-tbtn play${playing ? " on" : ""}`}
+          className={`hw-play${playing ? " on" : ""}`}
           onClick={() => tap(playId)}
+          aria-pressed={playing}
         >
-          {playing ? "Pause" : "Play"}
+          <span className="hw-play-icon" aria-hidden />
         </button>
       </div>
     </section>
@@ -244,57 +281,63 @@ export function DjBooth({
   select2,
 }: Props) {
   return (
-    <div className="dj-booth" role="group" aria-label="Turntables">
-      <Platter
+    <div className="hw-chassis" role="group" aria-label="DJ controller">
+      <Deck
         deck={1}
         title={title1}
         bpm={bpm1}
         playing={playing1}
         pressed={pressed}
         jogAngle={jogAngle1}
+        pitch={values["deck1.pitch"]}
         trackSelect={select1}
       />
 
-      <aside className="dj-mixer" aria-label="Mixer">
-        <div className="dj-eq-pair">
-          <div className="dj-eq-col">
-            <Knob id="deck1.high" label="Hi" value={values["deck1.high"]} />
-            <Knob id="deck1.mid" label="Mid" value={values["deck1.mid"]} />
-            <Knob id="deck1.low" label="Low" value={values["deck1.low"]} />
-            <Knob id="deck1.filter" label="Filter" value={values["deck1.filter"]} />
+      <aside className="hw-mixer" aria-label="Mixer">
+        <div className="hw-mixer-top">
+          <span className="hw-mixer-tag">MIX</span>
+        </div>
+        <div className="hw-eq-grid">
+          <div className="hw-eq-col">
+            <Knob id="deck1.high" label="HI" value={values["deck1.high"]} />
+            <Knob id="deck1.mid" label="MID" value={values["deck1.mid"]} />
+            <Knob id="deck1.low" label="LOW" value={values["deck1.low"]} />
+            <Knob id="deck1.filter" label="FLT" value={values["deck1.filter"]} />
           </div>
-          <div className="dj-eq-col">
-            <Knob id="deck2.high" label="Hi" value={values["deck2.high"]} />
-            <Knob id="deck2.mid" label="Mid" value={values["deck2.mid"]} />
-            <Knob id="deck2.low" label="Low" value={values["deck2.low"]} />
-            <Knob id="deck2.filter" label="Filter" value={values["deck2.filter"]} />
+          <div className="hw-eq-col">
+            <Knob id="deck2.high" label="HI" value={values["deck2.high"]} />
+            <Knob id="deck2.mid" label="MID" value={values["deck2.mid"]} />
+            <Knob id="deck2.low" label="LOW" value={values["deck2.low"]} />
+            <Knob id="deck2.filter" label="FLT" value={values["deck2.filter"]} />
           </div>
         </div>
 
-        <div className="dj-vol-row">
-          <Fader id="deck1.volume" value={values["deck1.volume"]} label="Deck 1 volume" />
-          <Fader id="deck2.volume" value={values["deck2.volume"]} label="Deck 2 volume" />
+        <div className="hw-channel-faders">
+          <div className="hw-ch">
+            <span>1</span>
+            <Fader id="deck1.volume" value={values["deck1.volume"]} label="Deck 1 volume" />
+          </div>
+          <div className="hw-ch">
+            <span>2</span>
+            <Fader id="deck2.volume" value={values["deck2.volume"]} label="Deck 2 volume" />
+          </div>
         </div>
 
-        <div className="dj-xf-wrap">
-          <span>1</span>
-          <Fader
-            id="crossfader"
-            value={values.crossfader}
-            vertical={false}
-            label="Crossfader"
-          />
-          <span>2</span>
+        <div className="hw-xf">
+          <span>A</span>
+          <Fader id="crossfader" value={values.crossfader} vertical={false} label="Crossfader" />
+          <span>B</span>
         </div>
       </aside>
 
-      <Platter
+      <Deck
         deck={2}
         title={title2}
         bpm={bpm2}
         playing={playing2}
         pressed={pressed}
         jogAngle={jogAngle2}
+        pitch={values["deck2.pitch"]}
         trackSelect={select2}
       />
     </div>
