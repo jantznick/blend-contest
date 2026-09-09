@@ -1,0 +1,652 @@
+/* —— djay-style single-viewport turntable booth —— */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+.dj-app {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0.4rem 0.55rem 0.5rem;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 0.35rem;
+  overflow: hidden;
+  color: var(--ink);
+  background: transparent;
+}
+
+.dj-app.is-live {
+  box-shadow: inset 0 0 0 1px #3dffa833;
+}
+
+.dj-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  min-height: 0;
+}
+
+.dj-brand-block {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dj-brand {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3vw, 2.35rem);
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  color: #f7f1e8;
+}
+
+.dj-tag {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  color: #9a9186;
+}
+
+.dj-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.dj-action {
+  appearance: none;
+  border: 1px solid #4a443c;
+  background: #1c1a17;
+  color: #e8e0d4;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+}
+
+.dj-action.primary {
+  border-color: #2a5a44;
+  background: #1a4234;
+  color: var(--led);
+}
+
+.dj-action.danger {
+  border-color: #8a3a28;
+  background: #4a2418;
+  color: #ffb39a;
+}
+
+.dj-targets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  margin-left: auto;
+}
+
+.dj-style {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8278;
+}
+
+.dj-style select,
+.dj-load select,
+.dj-load-bpm {
+  border: 1px solid #3a342c;
+  background: #16140f;
+  color: #f2ece3;
+  border-radius: 8px;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.78rem;
+}
+
+.dj-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.15rem;
+  border-radius: 999px;
+  background: #12100e;
+  border: 1px solid #2a2620;
+}
+
+.dj-modes button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #8a8278;
+  font-size: 0.72rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+}
+
+.dj-modes button.active {
+  background: #2a2620;
+  color: #f2ece3;
+}
+
+.dj-waves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  min-height: 0;
+}
+
+.dj-app .wave-strip {
+  grid-template-columns: 1.2rem 1fr;
+  gap: 0.25rem;
+  min-height: 0;
+}
+
+.dj-app .wave-strip-label {
+  font-size: 0.58rem;
+  color: #8a8278;
+}
+
+.dj-app .wave-strip-canvas {
+  height: 1.85rem;
+  border-radius: 6px;
+  border: 1px solid #2a2620;
+}
+
+.dj-error {
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: #3a2218;
+  color: #ffb39a;
+  font-size: 0.8rem;
+}
+
+.dj-stage {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #2e2a24;
+  background: linear-gradient(180deg, #161410 0%, #0a0908 100%);
+}
+
+.dj-booth {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(7.5rem, 0.55fr) minmax(0, 1.15fr);
+  gap: 0.45rem;
+  padding: 0.45rem;
+  align-items: stretch;
+}
+
+.dj-platter-col {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 0.3rem;
+  padding: 0.35rem;
+  border-radius: 12px;
+  background: #12100e;
+  border: 1px solid #2a2620;
+}
+
+.dj-platter-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.dj-platter-deck {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--led);
+  flex-shrink: 0;
+}
+
+.dj-platter-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.dj-platter-bpm {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: #8a8278;
+  flex-shrink: 0;
+}
+
+.dj-load {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.2rem auto;
+  gap: 0.25rem;
+}
+
+.dj-load button {
+  appearance: none;
+  border: 1px solid #3a342c;
+  background: #1c1a17;
+  color: #d8d0c4;
+  border-radius: 8px;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.dj-platter {
+  min-height: 0;
+  width: min(100%, 100%);
+  aspect-ratio: 1;
+  max-height: 100%;
+  margin: 0 auto;
+  border-radius: 50%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.dj-platter:active {
+  cursor: grabbing;
+}
+
+.dj-platter-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 3.5%;
+  background: radial-gradient(circle at 50% 50%, #2a2620 62%, #4a4640 63%, #1a1815 100%);
+  border: 2px solid #5a544c;
+  box-shadow: 0 12px 28px #00000088, inset 0 1px 0 #ffffff14;
+}
+
+.dj-platter.on .dj-platter-disc {
+  border-color: #3dffa888;
+  box-shadow: 0 0 28px #3dffa830, 0 12px 28px #00000088;
+}
+
+.dj-platter.touch .dj-platter-disc {
+  border-color: var(--led);
+}
+
+.dj-platter-vinyl {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      #080706 0 1.5px,
+      #2e2a24 1.5px 3px,
+      #12100e 3px 4.5px,
+      #3a342c 4.5px 6px
+    );
+  overflow: hidden;
+}
+
+.dj-platter-vinyl.spinning {
+  animation: dj-spin 1.8s linear infinite;
+}
+
+@keyframes dj-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dj-platter-grooves {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #ffffff12 0deg 1.4deg, transparent 1.4deg 13deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.dj-platter-label {
+  position: relative;
+  z-index: 1;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, #4a7a62 0%, #1a3028 55%, #0c1814 100%);
+  border: 1px solid #3dffa866;
+}
+
+.dj-platter-spindle {
+  position: absolute;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #cfc6b8;
+}
+
+.dj-platter-num {
+  font-family: var(--display);
+  font-size: clamp(1rem, 3vmin, 1.6rem);
+  letter-spacing: 0.05em;
+  color: #c8ecd8;
+  margin-top: 50%;
+}
+
+.dj-transport {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 0.3rem;
+}
+
+.dj-tbtn {
+  appearance: none;
+  border: 1px solid #3a342c;
+  background: #1a1815;
+  color: #d8d0c4;
+  border-radius: 10px;
+  padding: 0.45rem 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.dj-tbtn.play.on {
+  border-color: #2a5a44;
+  background: #16382c;
+  color: var(--led);
+}
+
+.dj-mixer {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding: 0.4rem 0.25rem;
+  border-radius: 12px;
+  background: #0f0e0c;
+  border: 1px solid #2a2620;
+}
+
+.dj-eq-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.dj-eq-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dj-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+.dj-knob-cap {
+  width: clamp(1.7rem, 3.8vmin, 2.35rem);
+  height: clamp(1.7rem, 3.8vmin, 2.35rem);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #3a342c, #16140f 70%);
+  border: 1px solid #5a544c;
+  position: relative;
+}
+
+.dj-knob-needle {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: 2px;
+  height: 38%;
+  margin-left: -1px;
+  background: #f2ece3;
+  border-radius: 1px;
+  transform-origin: bottom center;
+}
+
+.dj-knob-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8278;
+}
+
+.dj-vol-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  justify-items: center;
+  flex: 0 0 auto;
+  align-items: stretch;
+  min-height: 4.5rem;
+  height: min(22vh, 8rem);
+}
+
+.dj-fader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  cursor: pointer;
+  height: 100%;
+}
+
+.dj-fader.vert .dj-fader-track {
+  position: relative;
+  width: 0.7rem;
+  height: 100%;
+  min-height: 4rem;
+  border-radius: 999px;
+  background: #1c1a17;
+  border: 1px solid #3a342c;
+}
+
+.dj-fader.horiz {
+  width: 100%;
+}
+
+.dj-fader.horiz .dj-fader-track {
+  position: relative;
+  width: 100%;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: #1c1a17;
+  border: 1px solid #3a342c;
+}
+
+.dj-fader-thumb {
+  position: absolute;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  background: #f2ece3;
+  border: 1px solid #8a8278;
+  transform: translate(-50%, 50%);
+  left: 50%;
+}
+
+.dj-fader.horiz .dj-fader-thumb {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.dj-xf-wrap {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: #8a8278;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.dj-grade {
+  max-height: 18vh;
+  overflow: auto;
+  border-radius: 10px;
+}
+
+.dj-app .hw-grade {
+  margin: 0;
+}
+
+.dj-app .mix-timing-tip {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+}
+
+.dj-app .mix-timing-tip.ok {
+  color: var(--led);
+}
+
+.dj-app .mix-timing-tip.too-fast,
+.dj-app .mix-timing-tip.too-slow {
+  color: #ffb39a;
+}
+
+/* Mobile — djay Pro phone: two platters on top, mixer strip below */
+@media (max-width: 820px) {
+  .dj-app {
+    padding: 0.35rem;
+    gap: 0.3rem;
+  }
+
+  .dj-top {
+    gap: 0.35rem;
+  }
+
+  .dj-brand {
+    font-size: 1.45rem;
+  }
+
+  .dj-tag {
+    display: none;
+  }
+
+  .dj-targets {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .dj-modes {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .dj-waves {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dj-app .wave-strip-canvas {
+    height: 1.45rem;
+  }
+
+  .dj-booth {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 0.35rem;
+    padding: 0.35rem;
+  }
+
+  .dj-platter-col.deck-1 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dj-platter-col.deck-2 {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dj-mixer {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem 0.55rem;
+    padding: 0.4rem 0.45rem;
+  }
+
+  .dj-eq-pair {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dj-eq-col {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.4rem;
+  }
+
+  .dj-vol-row {
+    flex: 0 0 auto;
+    min-height: 3.5rem;
+    height: 3.8rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .dj-fader.vert .dj-fader-track {
+    min-height: 3.2rem;
+    height: 3.5rem;
+  }
+
+  .dj-xf-wrap {
+    flex: 1 1 100%;
+    margin-top: 0;
+  }
+
+  .dj-load-bpm {
+    display: none;
+  }
+
+  .dj-load {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .dj-grade {
+    max-height: 16vh;
+  }
+}
+
+@media (max-width: 420px) {
+  .dj-modes button {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.45rem;
+  }
+
+  .dj-action {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}

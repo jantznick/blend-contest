@@ -42,13 +42,14 @@ body {
   min-width: 320px;
   min-height: 100vh;
   min-height: 100dvh;
+  height: 100%;
+  overflow: hidden;
   background:
     radial-gradient(ellipse 70% 45% at 50% -5%, #1a3a2e 0%, transparent 55%),
     radial-gradient(ellipse 50% 35% at 0% 80%, #2a1a12 0%, transparent 50%),
     radial-gradient(ellipse 45% 30% at 100% 70%, #1a1520 0%, transparent 45%),
     linear-gradient(180deg, #12100e 0%, #080706 100%);
   color: var(--ink);
-  overflow-x: hidden;
 }
 
 #root {
