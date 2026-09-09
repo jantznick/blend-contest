@@ -1,22 +1,23 @@
 :root {
-  --bg: #f3efe6;
-  --bg-deep: #e8e1d4;
-  --ink: #1a1814;
-  --ink-muted: #5c564c;
-  --line: #cfc6b6;
-  --accent: #0d7a6f;
-  --accent-soft: #d3ebe7;
-  --warn: #c45c26;
-  --warn-soft: #f3ddd0;
-  --deck: #1e1c1a;
-  --deck-panel: #2a2724;
-  --deck-line: #3d3934;
+  --bg: #0c0b0a;
+  --bg-deep: #060504;
+  --ink: #f2ece3;
+  --ink-muted: #9a9186;
+  --line: #2e2a24;
+  --accent: #3dffa8;
+  --accent-soft: #16382c;
+  --warn: #ff8a5c;
+  --warn-soft: #3a2218;
+  --deck: #12110f;
+  --deck-panel: #1a1815;
+  --deck-line: #353029;
   --led: #3dffa8;
   --led-dim: #1a5c42;
   --cue: #f0e6a8;
   --hot: #ff6b4a;
   --play: #5eead4;
-  --font: "Outfit", system-ui, sans-serif;
+  --font: "Sora", "Outfit", system-ui, sans-serif;
+  --display: "Bebas Neue", "Oswald", Impact, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   color: var(--ink);
   background: var(--bg);
@@ -40,14 +41,19 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, #dceee9 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, #efe4d4 0%, transparent 50%),
-    var(--bg);
+    radial-gradient(ellipse 70% 45% at 50% -5%, #1a3a2e 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 0% 80%, #2a1a12 0%, transparent 50%),
+    radial-gradient(ellipse 45% 30% at 100% 70%, #1a1520 0%, transparent 45%),
+    linear-gradient(180deg, #12100e 0%, #080706 100%);
+  color: var(--ink);
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 button,
@@ -62,4 +68,16 @@ button {
 
 a {
   color: var(--accent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

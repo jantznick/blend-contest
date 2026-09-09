@@ -12,6 +12,7 @@ type Props = {
   track2: TrackId;
   locked?: boolean;
   hint?: string;
+  compact?: boolean;
   onSelect: (deck: 1 | 2, id: TrackId) => void;
   /** After upload decode, parent should load the new id onto the deck. */
   onUploaded: (deck: 1 | 2, id: TrackId) => void;
@@ -32,6 +33,7 @@ function DeckPicker({
   tracks,
   value,
   locked,
+  compact,
   onSelect,
   onUploaded,
 }: {
@@ -39,6 +41,7 @@ function DeckPicker({
   tracks: TrackInfo[];
   value: TrackId;
   locked?: boolean;
+  compact?: boolean;
   onSelect: (deck: 1 | 2, id: TrackId) => void;
   onUploaded: (deck: 1 | 2, id: TrackId) => void;
 }) {
@@ -73,9 +76,10 @@ function DeckPicker({
   };
 
   return (
-    <div className="track-picker-deck">
+    <div className={`track-picker-deck${compact ? " compact" : ""}`}>
+      <span className="track-picker-deck-tag">Deck {deck}</span>
       <label>
-        <span>Deck {deck}</span>
+        <span className="sr-only">Deck {deck} track</span>
         <select
           value={value}
           disabled={locked || busy}
@@ -90,7 +94,7 @@ function DeckPicker({
         </select>
       </label>
       <label className="track-picker-bpm">
-        <span>Upload BPM</span>
+        <span>BPM</span>
         <input
           type="number"
           min={60}
@@ -114,7 +118,7 @@ function DeckPicker({
         disabled={locked || busy}
         onClick={() => fileRef.current?.click()}
       >
-        {busy ? "Decoding…" : "Upload audio"}
+        {busy ? "…" : "Upload"}
       </button>
       {err && <p className="midi-banner warn">{err}</p>}
     </div>
@@ -127,18 +131,20 @@ export function TrackPickerBar({
   track2,
   locked,
   hint,
+  compact,
   onSelect,
   onUploaded,
 }: Props) {
   const list = tracks.length ? tracks : getBundledTracks();
   return (
-    <div className="track-picker-bar">
+    <div className={`track-picker-bar${compact ? " compact" : ""}`}>
       {hint && <p className="track-picker-hint">{hint}</p>}
       <DeckPicker
         deck={1}
         tracks={list}
         value={track1}
         locked={locked}
+        compact={compact}
         onSelect={onSelect}
         onUploaded={onUploaded}
       />
@@ -147,6 +153,7 @@ export function TrackPickerBar({
         tracks={list}
         value={track2}
         locked={locked}
+        compact={compact}
         onSelect={onSelect}
         onUploaded={onUploaded}
       />
