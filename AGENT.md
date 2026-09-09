@@ -2,7 +2,7 @@
 
 ## Why this repo exists
 
-Contest product: grade a mix between **two songs**. Key Mixer stays harmonic planning; Hercules stays curriculum. This repo is the graded 2-deck player.
+Contest product: grade a mix between **two songs**. This repo is the graded 2-deck player.
 
 ## Already scaffolded
 
@@ -17,8 +17,3 @@ Contest product: grade a mix between **two songs**. Key Mixer stays harmonic pla
 2. Smoke-test in browser: Arm → Start → move XF/EQ → End & grade
 3. Add fixed contest rounds + score persistence
 4. Optional: MediaRecorder on master bus for audio review
-
-## Source reference
-
-Upstream practice code: https://github.com/jantznick/hercules  
-Especially: `src/audio/`, `src/midi/`, `src/mix/timingFeedback.ts`, `TransitionPracticeLab.tsx`

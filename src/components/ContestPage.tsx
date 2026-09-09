@@ -30,7 +30,6 @@ function tipClass(verdict: string): string {
 
 /**
  * Contest round: two decks, Start → mix → End & grade (controller-motion score).
- * Ported from Hercules TransitionPracticeLab without tutorials / Tidal.
  */
 export function ContestPage({
   initialTarget = "free",
