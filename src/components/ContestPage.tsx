@@ -408,10 +408,10 @@ export function ContestPage({
           trackLabel2={`${bed2.title} · ${bed2.bpm}`}
           prompt={
             recording
-              ? `${targetMeta?.title ?? "Mix"} — EQ · filter · XF · pads`
+              ? `Mixing · ${targetMeta?.title ?? "Free"}`
               : phase === "graded"
-                ? "Scored below — Again for another pass"
-                : "Load tracks, hit Go, mix on the controller"
+                ? "Scored — Again for another pass"
+                : "Hit Go, then mix on the controller"
           }
         />
       </div>
