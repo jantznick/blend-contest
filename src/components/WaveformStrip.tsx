@@ -68,12 +68,19 @@ export function WaveformStrip({
 
       if (duration > 0) {
         const x = (playhead / duration) * w;
-        ctx.strokeStyle = "#fff8";
+        ctx.strokeStyle = "#f2ece3";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
         ctx.stroke();
+        ctx.fillStyle = "#3dffa8";
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 5, 7);
+        ctx.lineTo(x - 5, 7);
+        ctx.closePath();
+        ctx.fill();
       }
     };
 
