@@ -12,32 +12,32 @@ const SECTIONS: { id: SectionId; label: string }[] = [
 
 const MODE_STEPS: Record<string, string[]> = {
   free: [
-    "Always hand off Deck 1 → Deck 2 (XF left → right). Reverse blends are not graded.",
-    "Pick any handoff style — long fade, bass carve, filter sweep, or a quick cut.",
+    "Always hand off Deck 1 → Deck 2. Reverse blends are not graded.",
+    "Handoff with the crossfader (left → right) or channel faders (Deck 2 up, Deck 1 down) with XF centered.",
+    "Pick any style — long fade, bass carve, filter sweep, or a quick cut.",
     "Match tempos with the pitch/tempo faders before you blend.",
-    "Make a clear handoff (crossfader and/or channel faders), then hit Done.",
     "Score looks at tempo, bass hygiene, kick scaffold, and which named move your motion best matches.",
   ],
   "long-blend": [
     "Leave LOW / MID / HIGH near 12 o’clock — this mode is faders only.",
-    "Bring Deck 2 in with channel faders and/or a slow crossfader travel left → right (~1–4 bars).",
+    "Bring Deck 2 in with channel faders (XF can stay centered) and/or a slow crossfader travel left → right (~1–4 bars).",
     "Fade Deck 1 out as Deck 2 takes the room.",
     "Avoid bass swaps or big EQ moves; those belong in Bass swap.",
   ],
   "bass-swap": [
     "Start with both decks in the mix path; park Deck 2 LOW near center, then kill it (left).",
-    "Blend XF left → right while only one bassline stays full.",
+    "Blend with XF left → right, or keep XF centered and use channel faders — only one bassline stays full.",
     "Hand the bass to Deck 2: restore Deck 2 LOW, then kill Deck 1 LOW.",
     "Aim the bass carve for roughly ~2–6 bars at the track BPM.",
   ],
   "filter-open": [
     "On Deck 2, twist Filter right (thin / high-pass feel) before or as you start the blend.",
-    "Carve incoming LOW so both kicks don’t muddy the middle of the XF.",
+    "Carve incoming LOW so both kicks don’t muddy while both decks are in the room.",
     "Sweep Filter back toward center as you finish the handoff (~1–4 bars).",
-    "Crossfade or channel-fade into Deck 2 (left → right) while the filter opens.",
+    "Finish into Deck 2 with XF left → right or channel faders (Deck 2 up / Deck 1 down).",
   ],
   "xfader-cut": [
-    "Both decks loud, EQ flat at 12 o’clock.",
+    "Both decks loud, EQ flat at 12 o’clock — this mode requires the crossfader.",
     "Count a beat or two, then throw the crossfader left → right quickly (~¼–2 bars).",
     "Don’t carve bass or ride MID/HIGH — the cut is the move.",
     "A slightly fast snap can still pass; an incomplete XF travel (or right → left) will not.",
@@ -131,8 +131,9 @@ export function HowToPlayModal({ open, onClose }: Props) {
               </li>
               <li>
                 <strong>Mix the transition</strong> — match tempo, then hand off{" "}
-                <strong>Deck 1 → Deck 2</strong> (crossfader left → right) for your selected mode.
-                Reverse blends (Deck 2 → Deck 1) are not graded.
+                <strong>Deck 1 → Deck 2</strong> with the crossfader (left → right){" "}
+                <em>or</em> channel faders (Deck 2 up, Deck 1 down, XF can stay centered). Reverse
+                blends (Deck 2 → Deck 1) are not graded. Crossfader cut still requires XF.
               </li>
               <li>
                 <strong>Done</strong> — grading runs on recorded control motion + a tempo/kick
@@ -149,7 +150,8 @@ export function HowToPlayModal({ open, onClose }: Props) {
             <h3>Blend modes</h3>
             <p>
               Each tab in the header is a recipe the grader listens for. Pick one before Go. Every
-              mode expects <strong>Deck 1 outgoing → Deck 2 incoming</strong> (XF left → right).
+              mode expects <strong>Deck 1 outgoing → Deck 2 incoming</strong>. Use XF left → right
+              or channel faders (except Crossfader cut, which is XF-only).
             </p>
             <div className="howto-modes">
               {TRANSITION_RECIPES.map((r) => (
@@ -170,10 +172,15 @@ export function HowToPlayModal({ open, onClose }: Props) {
             <h3>How grading works</h3>
             <ul>
               <li>
-                <strong>Direction is fixed:</strong> score only Deck 1 → Deck 2. The grader wants
-                crossfader left → right, Deck 2 as the incoming deck (bass kill / filter / channel
-                fader up), and Deck 1 fading out. Blending the other way usually marks the handoff
-                incomplete even if it sounds fine.
+                <strong>Direction is fixed:</strong> score only Deck 1 → Deck 2. Deck 2 is the
+                incoming deck (bass kill / filter / channel fader up); Deck 1 fades out. Reverse
+                blends usually mark the handoff incomplete even if they sound fine.
+              </li>
+              <li>
+                <strong>Handoff tool is flexible:</strong> a full XF left → right{" "}
+                <em>or</em> a channel-fader handoff (Deck 2 up, Deck 1 down) both count — common
+                club mixes keep XF centered. <strong>Crossfader cut</strong> is the exception and
+                still requires XF travel.
               </li>
               <li>
                 While you mix, the app records crossfader, EQ, filter, channel faders, pitch, and
