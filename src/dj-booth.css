@@ -258,6 +258,19 @@ body,
 
 .ctrl-stage .mx-pad {
   min-height: 1.85rem;
+  background: #2a221c;
+  border: 1px solid #6a5a4a;
+  box-shadow: inset 0 1px 0 #ffffff12;
+}
+
+.ctrl-stage .mx-pad.set {
+  border-color: #5a9fd4;
+  background: #1a3048;
+}
+
+.ctrl-stage .mx-pad.hit {
+  background: #1a5c42;
+  border-color: #3dffa8;
 }
 
 .ctrl-stage .mx-center {
