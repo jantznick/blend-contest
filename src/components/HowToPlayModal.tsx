@@ -32,7 +32,7 @@ const MODE_STEPS: Record<string, string[]> = {
     "Take a few seconds for that bass hand-off — don’t rush it in one snap.",
   ],
   "filter-open": [
-    "On Deck 2, twist Filter to the right so the song sounds thinner / brighter before or as you start blending.",
+    "On Deck 2, twist Filter right so the track sounds thinner/brighter before you blend.",
     "Turn Deck 2’s LOW (bass) left while both songs are playing so the kicks don’t fight.",
     "As you finish switching to Deck 2, bring Filter back toward the middle.",
     "Finish on Deck 2 with the crossfader (left → right) or by raising Deck 2’s volume and lowering Deck 1’s.",

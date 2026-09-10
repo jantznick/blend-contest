@@ -1394,6 +1394,9 @@ body,
   font-size: 0.86rem;
   line-height: 1.5;
   color: #c0c8d4;
+  hyphens: none;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .howto-mode li + li {
