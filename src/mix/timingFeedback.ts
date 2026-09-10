@@ -506,7 +506,7 @@ export function judgeTempoMatch(
       "tempo",
       "Tempo match",
       100,
-      `Effective tempos within ${delta.toFixed(2)} BPM — leave SYNC off; this is the tempo fader job.`,
+      `Speeds within ${delta.toFixed(2)} BPM — leave SYNC off; use the tempo slider to match.`,
       "ok",
     );
   }
@@ -515,7 +515,7 @@ export function judgeTempoMatch(
       "tempo",
       "Tempo match",
       70,
-      `~${delta.toFixed(1)} BPM apart after pitch — nudge Deck 2’s tempo fader a little closer.`,
+      `About ${delta.toFixed(1)} BPM apart after pitching — nudge Deck 2’s tempo slider a little closer.`,
       "warn",
     );
   }
@@ -523,7 +523,7 @@ export function judgeTempoMatch(
     "tempo",
     "Tempo match",
     35,
-    `~${delta.toFixed(1)} BPM apart — match speeds with the tempo fader before the blend (SYNC stays off in drills).`,
+    `About ${delta.toFixed(1)} BPM apart — match the BPM numbers with the tempo slider before you blend.`,
     "miss",
   );
 }
@@ -1062,7 +1062,7 @@ export function judgeFreeTransition(
         "inferred",
         "Closest style",
         inferred.judgment.score,
-        `Motion best matches ${inferredTitle} (${inferred.judgment.score}/100 for that pattern).`,
+        `Your moves look most like ${inferredTitle} (${inferred.judgment.score}/100 for that style).`,
         inferred.judgment.score >= 70 ? "ok" : "warn",
       ),
       weight: 0.075,
