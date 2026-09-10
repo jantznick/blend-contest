@@ -219,7 +219,10 @@ function Deck({
 
   const pitchEl = (
     <div className="hw-pitch">
-      <span>TEMPO {formatPitchPct(pitch)}</span>
+      <span className="hw-pitch-bpm" title={`Catalog ${bpm} · pitch ${formatPitchPct(pitch)}`}>
+        {formatEffectiveBpm(bpm, pitch)}
+      </span>
+      <span className="hw-pitch-pct">{formatPitchPct(pitch)}</span>
       <Fader id={pitchId} value={pitch} label={`Deck ${deck} tempo`} />
     </div>
   );
@@ -256,7 +259,13 @@ function Deck({
         <div className="hw-deck-badge">DECK {deck}</div>
         <div className="hw-deck-track">
           <strong title={title}>{title}</strong>
-          <span title={`Catalog ${bpm} · pitch ${formatPitchPct(pitch)}`}>{formatEffectiveBpm(bpm, pitch)} BPM</span>
+          <span
+            className="hw-deck-bpm"
+            title={`Catalog ${bpm} · pitch ${formatPitchPct(pitch)}`}
+          >
+            {formatEffectiveBpm(bpm, pitch)}{" "}
+            <abbr title="Beats per minute">BPM</abbr>
+          </span>
         </div>
         {trackSelect}
       </header>

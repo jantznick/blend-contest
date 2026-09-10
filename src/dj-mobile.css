@@ -88,7 +88,7 @@
 .mb-load-title {
   grid-area: title;
   min-width: 0;
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   font-weight: 650;
   white-space: nowrap;
   overflow: hidden;
@@ -245,14 +245,24 @@
 .mb-tempo-bpm,
 .mb-tempo-pct {
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.68rem;
+  font-size: 0.88rem;
   color: var(--mb-muted);
 }
 
 .mb-tempo-bpm {
   color: var(--mb-ink);
-  font-weight: 700;
-  min-width: 2.6rem;
+  font-weight: 750;
+  min-width: 3.6rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+}
+
+.mb-tempo-unit {
+  font-size: 0.62rem;
+  font-weight: 650;
+  color: var(--mb-muted);
+  letter-spacing: 0.04em;
 }
 
 .mb-tempo-btn {
@@ -322,8 +332,8 @@
 
 .mb-knob-label {
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.48rem;
-  letter-spacing: 0.06em;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
   color: var(--mb-muted);
 }
 
@@ -680,9 +690,9 @@
   background: #1a1e24;
   color: var(--mb-muted);
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.48rem;
-  letter-spacing: 0.04em;
-  padding: 0.32rem 0.1rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  padding: 0.34rem 0.1rem;
   border-radius: 6px;
 }
 
@@ -729,7 +739,7 @@
 
 .mb-pad-label {
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -793,9 +803,9 @@
   background: #1a1e24;
   color: var(--mb-ink);
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.58rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   padding: 0.4rem 0.45rem;
   border-radius: 7px;
   min-width: 2.8rem;
@@ -809,8 +819,8 @@
 
 .mb-dock-bpm {
   font-family: var(--mono, ui-monospace, monospace);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 750;
   text-align: center;
   color: var(--mb-ink);
 }

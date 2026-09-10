@@ -297,7 +297,7 @@ export function judgeKickAlignment(samples: PlayheadSample[]): KickAlignJudgment
       grade: "drifting",
       offsetBeats,
       driftBeatsPerSec,
-      tip: `Playheads drifting — Deck 2 may be ${dir} vs the BPM scaffold. Re-check the tempo fader.`,
+      tip: `Speeds are drifting — Deck 2 sounds ${dir} vs Deck 1. Nudge Deck 2’s tempo slider until the BPM numbers match.`,
       experimental,
     };
   }
@@ -311,7 +311,7 @@ export function judgeKickAlignment(samples: PlayheadSample[]): KickAlignJudgment
       grade: "offset",
       offsetBeats,
       driftBeatsPerSec,
-      tip: `~${ms} ms ${earlyLate} on the beat grid — try a small jog nudge on Deck 2.`,
+      tip: `Beats are about ${ms} ms ${earlyLate} — give Deck 2’s platter a small nudge.`,
       experimental,
     };
   }
@@ -321,7 +321,7 @@ export function judgeKickAlignment(samples: PlayheadSample[]): KickAlignJudgment
     grade: "aligned",
     offsetBeats,
     driftBeatsPerSec,
-    tip: "Kick scaffold looks tight for this window — still trust your ears in djay.",
+    tip: "Beats look lined up for this window — still trust your ears for the final feel.",
     experimental,
   };
 }
@@ -338,7 +338,7 @@ export function judgeBlendSession(
     idealMs: windows?.bassSwap.idealMs ?? MIX_WINDOWS.bassSwap.idealMs,
     phraseBpm: bpm,
     phraseBars: windows?.bassSwap.phraseBars,
-    label: "Deck 2 bass kill",
+    label: "Deck 2 bass (LOW) down",
   });
   const crossfader = judgeCcRamp(samples.crossfader, {
     startZone: (v) => v <= xfLeftMax,
@@ -371,27 +371,27 @@ export const TRANSITION_RECIPES: {
   {
     id: "free",
     title: "Free",
-    blurb: "Any handoff — score tempo, EQ hygiene, and blend quality.",
+    blurb: "Switch from Deck 1 to Deck 2 however you like — we score tempo and a clean finish.",
   },
   {
     id: "long-blend",
     title: "Long blend",
-    blurb: "Faders / crossfader only — leave EQ near 12 o’clock.",
+    blurb: "Slow fade with volume / crossfader only — leave EQ knobs in the middle.",
   },
   {
     id: "bass-swap",
     title: "Bass swap",
-    blurb: "Kill incoming LOW, blend, then hand the bass to Deck 2.",
+    blurb: "Turn Deck 2’s bass (LOW) down, blend in, then give Deck 2 the bass.",
   },
   {
     id: "filter-open",
     title: "Filter open",
-    blurb: "Incoming Filter right (thin), then sweep to center as you blend.",
+    blurb: "On Deck 2, twist Filter right (thinner), blend in, then return Filter to the middle.",
   },
   {
     id: "xfader-cut",
     title: "Crossfader cut",
-    blurb: "Both loud, EQ flat — throw XF left → right in a beat or two.",
+    blurb: "Both loud, EQ in the middle — quickly slide the bottom crossfader left → right.",
   },
 ];
 
@@ -553,9 +553,9 @@ function judgeBassMud(
   if (d1Low.length < 2 || d2Low.length < 2 || (!hasXf && !hasVol)) {
     return dim(
       "bass",
-      "Bass hygiene",
+      "Bass clarity",
       40,
-      "Need more LOW plus crossfader or channel-fader motion to judge bass overlap.",
+      "Need more bass-knob (LOW) and volume/crossfader moves to judge whether two basslines clashed.",
       "incomplete",
     );
   }
@@ -589,9 +589,9 @@ function judgeBassMud(
   if (overlap < 3) {
     return dim(
       "bass",
-      "Bass hygiene",
+      "Bass clarity",
       55,
-      "Little dual-deck overlap sampled — leave both in the room longer (XF mid or both channel faders up) if you want a bass tip.",
+      "Both songs weren’t overlapping long enough to judge bass — keep both audible a bit longer if you want a bass tip.",
       "incomplete",
     );
   }
@@ -600,18 +600,18 @@ function judgeBassMud(
   if (muddyFrac > 0.45) {
     return dim(
       "bass",
-      "Bass hygiene",
+      "Bass clarity",
       30,
-      "Both LOWs sat near 12 o’clock while both decks were in the room — kill one bass (incoming LOW left).",
+      "Both bass knobs (LOW) sat in the middle while both songs played — turn one bass left so they don’t clash.",
       "miss",
     );
   }
   if (muddyFrac > 0.2) {
     return dim(
       "bass",
-      "Bass hygiene",
+      "Bass clarity",
       65,
-      "Some double-bass overlap — keep one LOW killed for most of the blend.",
+      "Some double-bass clash — keep one LOW (bass) knob turned left for most of the blend.",
       "warn",
     );
   }
@@ -620,17 +620,17 @@ function judgeBassMud(
   if (d2Killed) {
     return dim(
       "bass",
-      "Bass hygiene",
+      "Bass clarity",
       100,
-      "Incoming LOW was carved during the overlap — one bassline in the room.",
+      "Deck 2’s bass (LOW) was turned down during the overlap — one clean bassline.",
       "ok",
     );
   }
   return dim(
     "bass",
-    "Bass hygiene",
+    "Bass clarity",
     85,
-    "No heavy double-bass mud detected on this pass.",
+    "No heavy double-bass clash detected on this pass.",
     "ok",
   );
 }
@@ -643,20 +643,20 @@ function judgeEqFlatness(
   const { center, centerTol } = MIX_ZONES;
   const pts = [...mids, ...highs];
   if (pts.length < 4) {
-    return dim("eq-flat", label, 60, "Not enough MID/HIGH samples — leave them near 12 o’clock for basic mixes.", "incomplete");
+    return dim("eq-flat", label, 60, "Not enough MID/HIGH samples — leave mid & treble knobs in the middle for basic mixes.", "incomplete");
   }
   const near = fractionInZone(pts, (v) => Math.abs(v - center) <= centerTol + 10);
   if (near >= 0.75) {
-    return dim("eq-flat", label, 100, "MID/HIGH stayed near 12 o’clock — good for a basic handoff.", "ok");
+    return dim("eq-flat", label, 100, "MID/HIGH stayed in the middle — good for a basic switch.", "ok");
   }
   if (near >= 0.45) {
-    return dim("eq-flat", label, 70, "Some MID/HIGH moves — fine if intentional; reset to 12 o’clock after the mix.", "warn");
+    return dim("eq-flat", label, 70, "Some MID/HIGH moves — fine if intentional; put them back in the middle after.", "warn");
   }
   return dim(
     "eq-flat",
     label,
     45,
-    "MID/HIGH wandered a lot — basic transitions usually leave them at 12 o’clock (Neural Mix stem mode is a different lab).",
+    "MID/HIGH moved a lot — basic blends usually leave mid & treble knobs in the middle.",
     "warn",
   );
 }
@@ -681,7 +681,7 @@ function judgeVolumeHandoff(
     idealMs,
     phraseBpm: bpm,
     phraseBars: bars,
-    label: "Deck 2 channel fader up",
+    label: "Deck 2 volume up",
   });
   const outgoingDown = judgeCcRamp(vol1, {
     startZone: up,
@@ -689,14 +689,14 @@ function judgeVolumeHandoff(
     idealMs,
     phraseBpm: bpm,
     phraseBars: bars,
-    label: "Deck 1 channel fader down",
+    label: "Deck 1 volume down",
   });
   if (incomingUp.verdict !== "incomplete" && outgoingDown.verdict !== "incomplete") {
     const worse =
       rampScore(incomingUp) <= rampScore(outgoingDown) ? incomingUp : outgoingDown;
     return {
       ...worse,
-      tip: `Channel faders: ${incomingUp.tip} · ${outgoingDown.tip}`,
+      tip: `Volume faders: ${incomingUp.tip} · ${outgoingDown.tip}`,
     };
   }
   if (incomingUp.verdict !== "incomplete") return incomingUp;
@@ -706,15 +706,15 @@ function judgeVolumeHandoff(
 function kickDim(samples: PlayheadSample[]): TransitionDimension {
   const k = judgeKickAlignment(samples);
   if (!k.hasSignal || k.grade == null) {
-    return dim("kick", "Kick scaffold", 50, k.tip, "incomplete");
+    return dim("kick", "Beat match", 50, k.tip, "incomplete");
   }
   if (k.grade === "aligned") {
-    return dim("kick", "Kick scaffold", 100, k.tip, "aligned");
+    return dim("kick", "Beat match", 100, k.tip, "aligned");
   }
   if (k.grade === "offset") {
-    return dim("kick", "Kick scaffold", 55, k.tip, "offset");
+    return dim("kick", "Beat match", 55, k.tip, "offset");
   }
-  return dim("kick", "Kick scaffold", 40, k.tip, "drifting");
+  return dim("kick", "Beat match", 40, k.tip, "drifting");
 }
 
 function weightedScore(dims: { dim: TransitionDimension; weight: number }[]): number {
@@ -731,12 +731,12 @@ function weightedScore(dims: { dim: TransitionDimension; weight: number }[]): nu
 
 function summarize(recipe: TransitionRecipeId, score: number, passed: boolean): string {
   if (recipe === "free") {
-    if (passed && score >= 90) return `Free mix: excellent handoff (${score}).`;
+    if (passed && score >= 90) return `Free mix: excellent switch (${score}).`;
     if (passed) return `Free mix: solid (${score}) — check the tips for polish.`;
-    return `Free mix: ${score}/100 — clearer handoff or tempo match (pass ≥ 70).`;
+    return `Free mix: ${score}/100 — cleaner switch or closer tempos (pass ≥ 70).`;
   }
   const name = TRANSITION_RECIPES.find((r) => r.id === recipe)?.title ?? "Transition";
-  if (passed && score >= 90) return `${name}: excellent handoff (${score}).`;
+  if (passed && score >= 90) return `${name}: excellent switch (${score}).`;
   if (passed) return `${name}: solid pass (${score}) — check the tips for polish.`;
   return `${name}: ${score}/100 — fix the miss/warn lines and try again (pass ≥ 70).`;
 }
@@ -774,7 +774,7 @@ function buildHandoffDim(
   const handoffJudgment = useVol ? volHandoff : xfRamp;
   return dim(
     "handoff",
-    useVol ? "Channel-fader handoff" : "Crossfader handoff",
+    useVol ? "Volume-fader switch" : "Crossfader switch",
     rampScore(handoffJudgment),
     handoffJudgment.tip,
     handoffJudgment.verdict,
@@ -806,7 +806,7 @@ export function judgeBasicTransition(
   const eqFlat = judgeEqFlatness(
     [...samples.deck1Mid, ...samples.deck2Mid],
     [...samples.deck1High, ...samples.deck2High],
-    "MID / HIGH",
+    "MID / HIGH knobs",
   );
 
   const d2Bass = judgeCcRamp(samples.deck2Low, {
@@ -815,7 +815,7 @@ export function judgeBasicTransition(
     idealMs: windows.bassSwap.idealMs,
     phraseBpm,
     phraseBars: windows.bassSwap.phraseBars,
-    label: "Deck 2 bass kill",
+    label: "Deck 2 bass (LOW) down",
   });
   const d1Bass = judgeCcRamp(samples.deck1Low, {
     startZone: (v) => Math.abs(v - center) <= centerTol,
@@ -823,7 +823,7 @@ export function judgeBasicTransition(
     idealMs: windows.bassSwap.idealMs,
     phraseBpm,
     phraseBars: windows.bassSwap.phraseBars,
-    label: "Deck 1 bass kill (handoff)",
+    label: "Deck 1 bass (LOW) down",
   });
   const bassMud = judgeBassMud(
     samples.deck1Low,
@@ -842,7 +842,7 @@ export function judgeBasicTransition(
     ],
     phraseBpm,
     phraseBars: TRANSITION_PHRASE_BARS.filterOpen,
-    label: "Deck 2 filter open",
+    label: "Deck 2 Filter open",
   });
 
   const weighted: { dim: TransitionDimension; weight: number }[] = [];
@@ -854,11 +854,11 @@ export function judgeBasicTransition(
     );
     const eqDiscipline = dim(
       "eq-discipline",
-      "EQ discipline",
+      "EQ left alone",
       lowsNear >= 0.7 ? 100 : lowsNear >= 0.4 ? 65 : 35,
       lowsNear >= 0.7
-        ? "LOWs stayed near 12 o’clock — this is a fader-only long blend."
-        : "Long blend is channel faders / XF only — park LOWs at 12 o’clock (bass swap is the next move).",
+        ? "Bass knobs (LOW) stayed in the middle — good for a volume-only long blend."
+        : "Long blend is volume/crossfader only — leave LOW knobs in the middle (use Bass swap for bass moves).",
       lowsNear >= 0.7 ? "ok" : lowsNear >= 0.4 ? "warn" : "miss",
     );
     weighted.push(
@@ -897,7 +897,7 @@ export function judgeBasicTransition(
     );
     const bassCarve = dim(
       "bass-carve",
-      "Incoming bass carve",
+      "Deck 2 bass (LOW) down",
       rampScore(d2Bass),
       d2Bass.tip,
       d2Bass.verdict,
@@ -936,9 +936,9 @@ export function judgeBasicTransition(
           : dim("cut-speed", "Cut speed", rampScore(cutXfRamp), cutXfRamp.tip, cutXfRamp.verdict);
     const flatEq = dim(
       "cut-eq",
-      "EQ flat for cut",
+      "EQ left alone for cut",
       Math.round((eqFlat.score + (bassMud.score >= 70 ? 40 : bassMud.score)) / 1.4),
-      "Cuts usually keep EQ at 12 o’clock — both decks loud, then throw XF.",
+      "Cuts usually leave EQ knobs in the middle — both decks loud, then slide the crossfader.",
       eqFlat.verdict,
     );
     weighted.push(
@@ -1007,7 +1007,7 @@ export function judgeFreeTransition(
   if (motion.length < MIN_TRANSITION_SAMPLES) {
     return incompleteTransitionJudgment(
       recipe,
-      "Need more motion — hit Start, blend with XF or channel faders, then End (at least a few seconds).",
+      "Need more motion — hit Go, blend with the crossfader or volume faders, then Done (at least a few seconds).",
     );
   }
   const firstT = motion[0]?.t ?? 0;
@@ -1015,7 +1015,7 @@ export function judgeFreeTransition(
   if (lastT - firstT < MIN_TRANSITION_WINDOW_MS) {
     return incompleteTransitionJudgment(
       recipe,
-      "Blend window was too short — give the handoff a phrase or two before End.",
+      "That blend was too short — give the switch a few seconds before Done.",
     );
   }
 
@@ -1060,7 +1060,7 @@ export function judgeFreeTransition(
     {
       dim: dim(
         "inferred",
-        "Closest named move",
+        "Closest style",
         inferred.judgment.score,
         `Motion best matches ${inferredTitle} (${inferred.judgment.score}/100 for that pattern).`,
         inferred.judgment.score >= 70 ? "ok" : "warn",
@@ -1079,7 +1079,7 @@ export function judgeFreeTransition(
     passed,
     dimensions,
     summary: passed
-      ? `Free mix: ${score} — closest to ${inferredTitle}.`
+      ? `Free mix: ${score} — closest style: ${inferredTitle}.`
       : summarize(recipe, score, false),
   };
 }

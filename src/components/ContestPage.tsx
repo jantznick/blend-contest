@@ -515,8 +515,8 @@ export function ContestPage({
               </p>
             ))}
             <p className="footer-note">
-              Score is MIDI / on-screen control motion + tempo scaffold — not spectral audio analysis
-              yet. Fixed hosted song pairs and leaderboards come next.
+              Score uses your control moves (knobs, faders, tempo) — not a full listen to the audio
+              yet.
             </p>
           </HardwareGrade>
         </div>

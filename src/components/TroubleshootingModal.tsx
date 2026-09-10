@@ -143,7 +143,7 @@ export function TroubleshootingModal({ open, onClose, lastControl }: Props) {
                 MIDI map). Other maps won’t move this deck.
               </li>
               <li>
-                Twist EQ / filter / XF — the on-screen knobs should mirror before you hit Go. Go
+                Twist EQ / Filter / the bottom crossfader — the on-screen knobs should mirror before you hit Go. Go
                 only starts playback + grading.
               </li>
             </ol>
