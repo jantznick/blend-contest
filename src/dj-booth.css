@@ -95,6 +95,103 @@ body,
   color: #b8c4d4;
 }
 
+.dj-midi-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #3a4a58;
+  background: #12151a;
+  color: #9aa6b4;
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dj-midi-chip:hover {
+  border-color: #5a6472;
+  color: #d0d8e4;
+}
+
+.dj-midi-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #5a6472;
+  flex-shrink: 0;
+}
+
+.dj-midi-chip.tone-ok .dj-midi-dot {
+  background: #3d9a6a;
+}
+
+.dj-midi-chip.tone-live {
+  border-color: #2a6a4c;
+  color: #b8e0c8;
+}
+
+.dj-midi-chip.tone-live .dj-midi-dot {
+  background: #4ecf8a;
+  box-shadow: 0 0 0 3px #4ecf8a33;
+}
+
+.dj-midi-chip.tone-warn {
+  border-color: #8a6238;
+  color: #e8c49a;
+}
+
+.dj-midi-chip.tone-warn .dj-midi-dot {
+  background: #d4a05a;
+}
+
+.trouble-panel {
+  width: min(36rem, 100%);
+}
+
+.trouble-status {
+  margin: 0 0 0.75rem;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #c8d0dc;
+}
+
+.trouble-status li + li {
+  margin-top: 0.35rem;
+}
+
+.trouble-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+}
+
+.howto-body .midi-banner {
+  margin: 0.65rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  background: #1c2420;
+  border: 1px solid #2a4a3a;
+  color: #c8dcc8;
+}
+
+.howto-body .midi-banner.warn {
+  background: #2a2218;
+  border-color: #8a6238;
+  color: #f0d2a8;
+}
+
 .dj-targets {
   display: flex;
   flex-wrap: wrap;

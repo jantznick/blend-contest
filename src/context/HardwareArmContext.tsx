@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -17,7 +18,7 @@ type HardwareArmContextValue = {
   arming: boolean;
   error: string | null;
   /** Connect MIDI when available; does not require a controller. */
-  arm: () => Promise<void>;
+  arm: (force?: boolean) => Promise<void>;
 };
 
 const HardwareArmContext = createContext<HardwareArmContextValue | null>(null);
@@ -29,12 +30,12 @@ export function HardwareArmProvider({ children }: { children: ReactNode }) {
   const [arming, setArming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const arm = useCallback(async () => {
+  const arm = useCallback(async (force = false) => {
     setArming(true);
     setError(null);
     try {
       try {
-        await connect();
+        await connect({ force });
       } catch {
         /* MIDI optional — pointer deck still works */
       }
@@ -45,6 +46,11 @@ export function HardwareArmProvider({ children }: { children: ReactNode }) {
       setArming(false);
     }
   }, [connect]);
+
+  // Connect Web MIDI as soon as the app loads — don't wait for Go.
+  useEffect(() => {
+    void arm(false);
+  }, [arm]);
 
   const value = useMemo(
     () => ({

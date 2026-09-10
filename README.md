@@ -18,7 +18,9 @@ npm run dev
 
 Drop audio into `public/tracks/` and register rows in `src/audio/tracks.ts`. Without files, the turntable uses synth beds as a fallback.
 
-Quit **djay** (or other apps) if the Mix Ultra won’t connect — many hosts take exclusive MIDI.
+Web MIDI connects on page load (before **Go**). Quit **djay** (or other apps) if the Mix Ultra won’t
+appear — many hosts take exclusive MIDI. Use **Troubleshoot** in the header if knobs don’t mirror
+the on-screen deck.
 
 ## Stack
 
