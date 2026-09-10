@@ -1,33 +1,75 @@
 import { parseMidiMessage, type ParsedMidi } from "./parse";
 
+export type MidiPortInfo = { id: string; name: string };
+
 export type MidiBusStatus =
   | { status: "idle" }
   | { status: "connecting" }
-  | { status: "ready"; inputCount: number; outputCount: number }
+  | {
+      status: "ready";
+      inputCount: number;
+      outputCount: number;
+      inputs: MidiPortInfo[];
+      outputs: MidiPortInfo[];
+    }
   | { status: "unsupported" }
   | { status: "denied"; message: string }
   | { status: "error"; message: string };
 
+/** Last physical or injected MIDI message summary (for troubleshooting). */
+export type MidiActivity = {
+  at: number;
+  kind: string;
+  channel: number | null;
+  number: number | null;
+  value: number;
+  source: "hardware" | "inject";
+};
+
 type Listener = (msg: ParsedMidi) => void;
 type StatusListener = (s: MidiBusStatus) => void;
+type ActivityListener = (a: MidiActivity | null) => void;
 
 let access: MIDIAccess | null = null;
 let busStatus: MidiBusStatus = { status: "idle" };
+let lastActivity: MidiActivity | null = null;
 const messageListeners = new Set<Listener>();
 const statusListeners = new Set<StatusListener>();
+const activityListeners = new Set<ActivityListener>();
 
 function setStatus(next: MidiBusStatus) {
   busStatus = next;
   for (const fn of statusListeners) fn(next);
 }
 
-function emit(msg: ParsedMidi) {
+function setActivity(next: MidiActivity) {
+  lastActivity = next;
+  for (const fn of activityListeners) fn(next);
+}
+
+function emit(msg: ParsedMidi, source: "hardware" | "inject") {
+  setActivity({
+    at: msg.at,
+    kind: msg.kind,
+    channel: msg.channel,
+    number: msg.number,
+    value: msg.value,
+    source,
+  });
   for (const fn of messageListeners) fn(msg);
 }
 
 /** Software / pointer input — same listeners as physical MIDI. */
 export function injectMidi(msg: ParsedMidi) {
-  emit(msg);
+  emit(msg, "inject");
+}
+
+function portList(ports: MIDIInputMap | MIDIOutputMap): MidiPortInfo[] {
+  const list: MidiPortInfo[] = [];
+  for (const port of ports.values()) {
+    list.push({ id: port.id, name: port.name?.trim() || port.id });
+  }
+  return list;
 }
 
 function attachInputs(a: MIDIAccess) {
@@ -36,7 +78,7 @@ function attachInputs(a: MIDIAccess) {
       const data = event.data;
       if (!data || data.length === 0) return;
       const parsed = parseMidiMessage(data);
-      if (parsed) emit(parsed);
+      if (parsed) emit(parsed, "hardware");
     };
   }
 }
@@ -46,11 +88,17 @@ function refreshReady(a: MIDIAccess) {
     status: "ready",
     inputCount: a.inputs.size,
     outputCount: a.outputs.size,
+    inputs: portList(a.inputs),
+    outputs: portList(a.outputs),
   });
 }
 
 export function getMidiStatus(): MidiBusStatus {
   return busStatus;
+}
+
+export function getMidiActivity(): MidiActivity | null {
+  return lastActivity;
 }
 
 /** Active MIDIAccess after connect, or null. Used for MIDI out / LEDs. */
@@ -71,6 +119,12 @@ export function subscribeMidiStatus(fn: StatusListener): () => void {
   statusListeners.add(fn);
   fn(busStatus);
   return () => statusListeners.delete(fn);
+}
+
+export function subscribeMidiActivity(fn: ActivityListener): () => void {
+  activityListeners.add(fn);
+  fn(lastActivity);
+  return () => activityListeners.delete(fn);
 }
 
 export async function connectMidiBus(): Promise<MidiBusStatus> {

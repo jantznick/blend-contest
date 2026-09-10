@@ -126,6 +126,10 @@ export function HowToPlayModal({ open, onClose }: Props) {
                 Crossfader cut. Modes lock once you hit Go.
               </li>
               <li>
+                <strong>Controller</strong> — Web MIDI connects when the page loads (see the MIDI
+                chip / Troubleshoot). Twist a knob before Go; the on-screen deck should mirror it.
+              </li>
+              <li>
                 <strong>Go</strong> — both decks start playing and motion recording begins. Use the
                 on-screen Mix Ultra or a connected controller.
               </li>
@@ -216,8 +220,9 @@ export function HowToPlayModal({ open, onClose }: Props) {
                 with pointer / touch after Go starts audio.
               </li>
               <li>
-                <strong>Mix Ultra (MIDI)</strong> — optional. Quit other DJ apps if the box won’t
-                connect; Chrome/Edge on desktop work best.
+                <strong>Mix Ultra (MIDI)</strong> — optional; connects on page load (before Go).
+                Quit djay / other DJ apps if the box won’t appear; Chrome/Edge on desktop work
+                best. Use <strong>Troubleshoot</strong> next to How to play if knobs don’t mirror.
               </li>
               <li>
                 <strong>Waveforms</strong> — show playhead and cues so you can see where each deck

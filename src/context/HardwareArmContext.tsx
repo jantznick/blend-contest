@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -45,6 +46,11 @@ export function HardwareArmProvider({ children }: { children: ReactNode }) {
       setArming(false);
     }
   }, [connect]);
+
+  // Connect Web MIDI as soon as the app loads — don't wait for Go.
+  useEffect(() => {
+    void arm();
+  }, [arm]);
 
   const value = useMemo(
     () => ({

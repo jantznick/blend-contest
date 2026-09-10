@@ -23,6 +23,7 @@ import { useHardwareArm } from "../context/HardwareArmContext";
 import { DjBooth } from "./DjBooth";
 import { HardwareGrade } from "./HardwareLabShell";
 import { HowToPlayModal } from "./HowToPlayModal";
+import { MidiStatusChip, TroubleshootingModal } from "./TroubleshootingModal";
 import { MobileBooth } from "./MobileBooth";
 import { WaveformStrip } from "./WaveformStrip";
 
@@ -153,6 +154,7 @@ export function ContestPage({
   const [grade, setGrade] = useState<TransitionJudgment | null>(null);
   const [alignSamples, setAlignSamples] = useState<PlayheadSample[]>([]);
   const [howtoOpen, setHowtoOpen] = useState(false);
+  const [troubleOpen, setTroubleOpen] = useState(false);
 
   const recording = phase === "recording";
   const locked = phase !== "idle";
@@ -305,6 +307,19 @@ export function ContestPage({
           >
             How to play
           </button>
+          <button
+            type="button"
+            className="dj-action dj-action-help"
+            aria-haspopup="dialog"
+            aria-expanded={troubleOpen}
+            onClick={() => setTroubleOpen(true)}
+          >
+            Troubleshoot
+          </button>
+          <MidiStatusChip
+            lastControl={live.lastControl}
+            onOpenTrouble={() => setTroubleOpen(true)}
+          />
           {phase === "idle" && (
             <button type="button" className="dj-action primary" onClick={() => void go()}>
               Go
@@ -508,6 +523,11 @@ export function ContestPage({
       )}
 
       <HowToPlayModal open={howtoOpen} onClose={() => setHowtoOpen(false)} />
+      <TroubleshootingModal
+        open={troubleOpen}
+        onClose={() => setTroubleOpen(false)}
+        lastControl={live.lastControl}
+      />
     </div>
   );
 }
