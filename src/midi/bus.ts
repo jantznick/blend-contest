@@ -127,12 +127,15 @@ export function subscribeMidiActivity(fn: ActivityListener): () => void {
   return () => activityListeners.delete(fn);
 }
 
-export async function connectMidiBus(): Promise<MidiBusStatus> {
+export async function connectMidiBus(opts?: { force?: boolean }): Promise<MidiBusStatus> {
   if (!hasWebMidi()) {
     setStatus({ status: "unsupported" });
     return busStatus;
   }
-  if (access && busStatus.status === "ready") return busStatus;
+  if (!opts?.force && access && busStatus.status === "ready") return busStatus;
+  if (opts?.force) {
+    disconnectMidiBus();
+  }
 
   setStatus({ status: "connecting" });
   try {

@@ -117,7 +117,7 @@ export function TroubleshootingModal({ open, onClose, lastControl }: Props) {
                 type="button"
                 className="dj-action"
                 disabled={arming || status.status === "connecting"}
-                onClick={() => void arm()}
+                onClick={() => void arm(true)}
               >
                 {arming || status.status === "connecting" ? "Connecting…" : "Retry MIDI"}
               </button>
@@ -200,8 +200,11 @@ export function MidiStatusChip({
   } else if (status.status === "unsupported") {
     label = "MIDI n/a";
     tone = "warn";
-  } else if (status.status === "denied" || status.status === "error") {
+  } else if (status.status === "denied") {
     label = "MIDI denied";
+    tone = "warn";
+  } else if (status.status === "error") {
+    label = "MIDI error";
     tone = "warn";
   } else if (status.status === "ready") {
     if (status.inputCount === 0) {
