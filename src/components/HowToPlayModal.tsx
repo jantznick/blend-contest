@@ -6,41 +6,42 @@ type SectionId = "play" | "modes" | "grading" | "controls";
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: "play", label: "How to play" },
   { id: "modes", label: "Blend modes" },
-  { id: "grading", label: "Grading" },
+  { id: "grading", label: "Scoring" },
   { id: "controls", label: "Controls" },
 ];
 
+/** Plain-language steps for non-DJs. Knob names (LOW, Filter) match the on-screen labels. */
 const MODE_STEPS: Record<string, string[]> = {
   free: [
-    "Always hand off Deck 1 → Deck 2. Reverse blends are not graded.",
-    "Handoff with the crossfader (left → right) or channel faders (Deck 2 up, Deck 1 down) with XF centered.",
-    "Pick any style — long fade, bass carve, filter sweep, or a quick cut.",
-    "Match tempos with the pitch/tempo faders before you blend.",
-    "Score looks at tempo, bass hygiene, kick scaffold, and which named move your motion best matches.",
+    "Always switch from Deck 1 → Deck 2. Going the other way doesn’t count.",
+    "Move to Deck 2 with the bottom crossfader (left → right), or raise Deck 2’s volume fader and lower Deck 1’s (the bottom slider can stay in the middle).",
+    "Any style is fine: a slow fade, a bass swap, a Filter move, or a quick cut.",
+    "Before you blend, line up the speeds with each deck’s tempo slider so both BPM numbers match.",
+    "We score tempo match, whether two basslines clash, and how cleanly you finished the switch.",
   ],
   "long-blend": [
-    "Leave LOW / MID / HIGH near 12 o’clock — this mode is faders only.",
-    "Bring Deck 2 in with channel faders (XF can stay centered) and/or a slow crossfader travel left → right (~1–4 bars).",
-    "Fade Deck 1 out as Deck 2 takes the room.",
-    "Avoid bass swaps or big EQ moves; those belong in Bass swap.",
+    "Leave the EQ knobs (LOW / MID / HIGH) in the middle — this mode is volume only.",
+    "Fade Deck 2 in with its volume fader and/or slowly slide the bottom crossfader left → right over a few seconds.",
+    "Fade Deck 1 out as Deck 2 takes over.",
+    "Don’t turn bass knobs for this mode — that’s the Bass swap challenge.",
   ],
   "bass-swap": [
-    "Start with both decks in the mix path; park Deck 2 LOW near center, then kill it (left).",
-    "Blend with XF left → right, or keep XF centered and use channel faders — only one bassline stays full.",
-    "Hand the bass to Deck 2: restore Deck 2 LOW, then kill Deck 1 LOW.",
-    "Aim the bass carve for roughly ~2–6 bars at the track BPM.",
+    "Start with both songs audible. On Deck 2, turn the LOW (bass) knob left to remove its bass.",
+    "Blend the songs with the crossfader (left → right) or the volume faders — only one bassline should be full at a time.",
+    "Give Deck 2 the bass: turn Deck 2’s LOW back to the middle, then turn Deck 1’s LOW left.",
+    "Take a few seconds for that bass hand-off — don’t rush it in one snap.",
   ],
   "filter-open": [
-    "On Deck 2, twist Filter right (thin / high-pass feel) before or as you start the blend.",
-    "Carve incoming LOW so both kicks don’t muddy while both decks are in the room.",
-    "Sweep Filter back toward center as you finish the handoff (~1–4 bars).",
-    "Finish into Deck 2 with XF left → right or channel faders (Deck 2 up / Deck 1 down).",
+    "On Deck 2, twist Filter right so the track sounds thinner/brighter before you blend.",
+    "Turn Deck 2’s LOW (bass) left while both songs are playing so the kicks don’t fight.",
+    "As you finish switching to Deck 2, bring Filter back toward the middle.",
+    "Finish on Deck 2 with the crossfader (left → right) or by raising Deck 2’s volume and lowering Deck 1’s.",
   ],
   "xfader-cut": [
-    "Both decks loud, EQ flat at 12 o’clock — this mode requires the crossfader.",
-    "Count a beat or two, then throw the crossfader left → right quickly (~¼–2 bars).",
-    "Don’t carve bass or ride MID/HIGH — the cut is the move.",
-    "A slightly fast snap can still pass; an incomplete XF travel (or right → left) will not.",
+    "Both decks loud, EQ knobs in the middle — this mode needs the bottom crossfader.",
+    "Count a beat or two, then quickly slide the crossfader left → right (about one beat to two bars).",
+    "Don’t turn bass or MID/HIGH for this one — the quick slider move is the whole trick.",
+    "A slightly fast cut can still pass; stopping halfway or going right → left will not.",
   ],
 };
 
@@ -91,7 +92,7 @@ export function HowToPlayModal({ open, onClose }: Props) {
           <div>
             <h2 id={titleId}>How to play</h2>
             <p className="howto-tagline">
-              Load two tracks, pick a blend mode, mix the handoff, then get scored.
+              Load two songs, pick a blend style, switch from Deck 1 to Deck 2, then get a score.
             </p>
           </div>
           <button
@@ -118,33 +119,34 @@ export function HowToPlayModal({ open, onClose }: Props) {
             <h3>Step by step</h3>
             <ol>
               <li>
-                <strong>Pick beds</strong> — use Beds for a style pair, or load hosted / uploaded
-                tracks on each deck (set BPM when uploading).
+                <strong>Pick songs</strong> — use Beds for a style pair, or load a track on each
+                deck (set BPM when you upload).
               </li>
               <li>
                 <strong>Choose a blend mode</strong> — Free, Long blend, Bass swap, Filter open, or
-                Crossfader cut. Modes lock once you hit Go.
+                Crossfader cut. The choice locks when you hit Go.
               </li>
               <li>
-                <strong>Controller</strong> — Web MIDI connects when the page loads (see the MIDI
-                chip / Troubleshoot). Twist a knob before Go; the on-screen deck should mirror it.
+                <strong>Controller (optional)</strong> — MIDI connects when the page loads (see the
+                MIDI chip / Troubleshoot). Twist a knob before Go; the on-screen deck should move
+                with it.
               </li>
               <li>
-                <strong>Go</strong> — both decks start playing and motion recording begins. Use the
-                on-screen Mix Ultra or a connected controller.
+                <strong>Go</strong> — both decks start playing and we start recording your moves.
+                Use the on-screen deck or a plugged-in controller.
               </li>
               <li>
-                <strong>Mix the transition</strong> — match tempo, then hand off{" "}
-                <strong>Deck 1 → Deck 2</strong> with the crossfader (left → right){" "}
-                <em>or</em> channel faders (Deck 2 up, Deck 1 down, XF can stay centered). Reverse
-                blends (Deck 2 → Deck 1) are not graded. Crossfader cut still requires XF.
+                <strong>Switch songs</strong> — match the BPM numbers first, then move from{" "}
+                <strong>Deck 1 → Deck 2</strong>. Use the bottom crossfader (left → right){" "}
+                <em>or</em> Deck 2’s volume up and Deck 1’s volume down. The other way around doesn’t
+                count. Crossfader cut must use the bottom slider.
               </li>
               <li>
-                <strong>Done</strong> — grading runs on recorded control motion + a tempo/kick
-                scaffold. Pass is <strong>70+</strong> with a completed handoff.
+                <strong>Done</strong> — we score how you moved the controls (not a full audio
+                analysis yet). Pass is <strong>70+</strong> with a finished switch to Deck 2.
               </li>
               <li>
-                <strong>Again / Reset</strong> — Again clears the grade so you can retry; Reset also
+                <strong>Again / Reset</strong> — Again clears the score so you can retry; Reset also
                 stops both decks.
               </li>
             </ol>
@@ -153,9 +155,15 @@ export function HowToPlayModal({ open, onClose }: Props) {
           <section id="howto-modes" className="howto-section">
             <h3>Blend modes</h3>
             <p>
-              Each tab in the header is a recipe the grader listens for. Pick one before Go. Every
-              mode expects <strong>Deck 1 outgoing → Deck 2 incoming</strong>. Use XF left → right
-              or channel faders (except Crossfader cut, which is XF-only).
+              Each tab in the header is a style we’re listening for. Pick one before Go. Every mode
+              expects <strong>Deck 1 out → Deck 2 in</strong>. You can usually use either the bottom
+              crossfader or the two volume faders (Crossfader cut is the exception — bottom slider
+              only).
+            </p>
+            <p className="howto-glossary">
+              <strong>Quick labels:</strong> LOW = bass knob · MID / HIGH = mid / treble · Filter =
+              thin/bright knob · Crossfader = bottom left↔right slider · “Middle” on a knob = neutral
+              (straight up).
             </p>
             <div className="howto-modes">
               {TRANSITION_RECIPES.map((r) => (
@@ -173,42 +181,32 @@ export function HowToPlayModal({ open, onClose }: Props) {
           </section>
 
           <section id="howto-grading" className="howto-section">
-            <h3>How grading works</h3>
+            <h3>How scoring works</h3>
             <ul>
               <li>
-                <strong>Direction is fixed:</strong> score only Deck 1 → Deck 2. Deck 2 is the
-                incoming deck (bass kill / filter / channel fader up); Deck 1 fades out. Reverse
-                blends usually mark the handoff incomplete even if they sound fine.
+                <strong>Direction is fixed:</strong> we only score Deck 1 → Deck 2. Deck 2 is the
+                song you’re bringing in; Deck 1 fades out. The reverse usually fails even if it
+                sounded fine.
               </li>
               <li>
-                <strong>Handoff tool is flexible:</strong> a full XF left → right{" "}
-                <em>or</em> a channel-fader handoff (Deck 2 up, Deck 1 down) both count — common
-                club mixes keep XF centered. <strong>Crossfader cut</strong> is the exception and
-                still requires XF travel.
+                <strong>Two ways to switch:</strong> slide the bottom crossfader fully left → right,{" "}
+                <em>or</em> raise Deck 2’s volume and lower Deck 1’s.{" "}
+                <strong>Crossfader cut</strong> must use the bottom slider.
               </li>
               <li>
-                While you mix, the app records crossfader, EQ, filter, channel faders, pitch, and
-                playhead samples — not a full spectral analysis of the audio yet.
+                While you mix, we record the crossfader, EQ knobs, Filter, volume faders, tempo, and
+                playhead — not a full “listen to the audio” analysis yet.
               </li>
               <li>
-                Dimensions are weighted by mode (handoff timing, bass hygiene, filter sweep, cut
-                speed, tempo match, kick scaffold, EQ discipline).
+                Tips call out tempo match, whether two basslines clashed, Filter timing, cut speed,
+                and whether you finished the switch.
               </li>
               <li>
-                Timing windows are phrase-aware (bars at your tracks’ BPM). Tips say if a move was
-                too fast, too slow, or incomplete.
+                <strong>Pass ≥ 70</strong>, and you must finish moving onto Deck 2. Incomplete
+                recordings fail.
               </li>
-              <li>
-                <strong>Pass ≥ 70</strong>, and the handoff must finish (clear start → end on XF or
-                channel faders). Incomplete recordings fail.
-              </li>
-              <li>
-                Free mode also reports the closest named move your motion resembled.
-              </li>
-              <li>
-                Kick / tempo tips are a BPM + pitch scaffold — still trust your ears for the final
-                feel.
-              </li>
+              <li>Free mode also names which style your moves looked most like.</li>
+              <li>Tempo tips use the BPM numbers — still trust your ears for the feel.</li>
             </ul>
           </section>
 
@@ -216,21 +214,21 @@ export function HowToPlayModal({ open, onClose }: Props) {
             <h3>Controls</h3>
             <ul>
               <li>
-                <strong>On-screen deck</strong> — knobs, jogs, channel faders, and crossfader work
-                with pointer / touch after Go starts audio.
+                <strong>On-screen deck</strong> — knobs, platters, volume faders, and the bottom
+                crossfader work with mouse or touch after Go starts audio.
               </li>
               <li>
-                <strong>Mix Ultra (MIDI)</strong> — optional; connects on page load (before Go).
-                Quit djay / other DJ apps if the box won’t appear; Chrome/Edge on desktop work
-                best. Use <strong>Troubleshoot</strong> next to How to play if knobs don’t mirror.
+                <strong>Mix Ultra (optional)</strong> — connects on page load. Quit other DJ apps if
+                the box doesn’t show up; Chrome/Edge on desktop work best. Use{" "}
+                <strong>Troubleshoot</strong> if knobs don’t mirror.
               </li>
               <li>
-                <strong>Waveforms</strong> — show playhead and cues so you can see where each deck
-                sits during the blend.
+                <strong>BPM while pitching</strong> — the big number next to each tempo slider is the
+                live speed of that song; match Deck 1 and Deck 2 before you blend.
               </li>
               <li>
-                Track selection and blend mode lock while recording or after grading until you hit
-                Again or Reset.
+                Track and mode choices lock while you’re recording or after a score until Again or
+                Reset.
               </li>
             </ul>
           </section>

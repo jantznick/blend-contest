@@ -241,7 +241,10 @@ function TempoBar({
       <span className="mb-tempo-note" aria-hidden>
         ♪
       </span>
-      <span className="mb-tempo-bpm">{formatEffectiveBpm(bpm, pitch)}</span>
+      <span className="mb-tempo-bpm">
+        {formatEffectiveBpm(bpm, pitch)}
+        <span className="mb-tempo-unit">BPM</span>
+      </span>
       <Fader id={pitchId} value={pitch} vertical={false} label={`Deck ${deck} tempo`} />
       <span className="mb-tempo-pct">{formatPitchPct(pitch)}</span>
       <button type="button" className="mb-tempo-btn" aria-label="Slower" onClick={() => nudge(-2)}>
